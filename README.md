@@ -5,7 +5,7 @@
 </div>
 
 # About
-This folder contains the scripts to classify and post-process the Pantanal Biome. 11111
+This folder contains the scripts to classify and post-process the Pantanal Biome.
 
 We recommend that you read the Pantanal Biome Appendix of the Algorithm Theoretical Basis Document (ATBD).
 
