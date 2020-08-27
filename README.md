@@ -5,9 +5,9 @@
 </div>
 
 # About
-This folder contains the scripts to classify and post-process the Atlantic Forest Biome.
+This folder contains the scripts to classify and post-process the Pantanal Biome.
 
-We recommend that you read the Atlantic Forest Biome Appendix of the Algorithm Theoretical Basis Document (ATBD).
+We recommend that you read the Pantanal Biome Appendix of the Algorithm Theoretical Basis Document (ATBD).
 
 # How to use
 First, you need to copy these scripts (including those in utils folder) to your Google Earth Engine (GEE) account.
