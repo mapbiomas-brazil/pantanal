@@ -1,0 +1,357 @@
+var col6_r7 = /* color: #ff0000 */ee.Geometry.Polygon(
+        [[[-57.536412376976756, -18.244591753599884],
+          [-57.486973900414256, -18.294146328803823],
+          [-57.591344017601756, -18.707026505695946],
+          [-57.742406029320506, -18.730438229690048],
+          [-57.797337669945506, -18.938399501899948],
+          [-57.583104271508006, -19.008528167728887],
+          [-57.522679466820506, -19.063052255541646],
+          [-57.511693138695506, -19.130533430846082],
+          [-57.530919212914256, -19.192799288945622],
+          [-57.47530092678144, -19.21484613741784],
+          [-57.42491952648797, -19.22603070243386],
+          [-57.428779035921735, -19.243695758132233],
+          [-57.49830355129316, -19.262172026503357],
+          [-57.49727358303144, -19.281292999241902],
+          [-57.333165306664256, -19.358726289620396],
+          [-57.440282005883006, -19.449396358352374],
+          [-57.690220970726756, -19.5296618505311],
+          [-58.019810814476756, -19.470113842435705],
+          [-58.195592064476756, -19.79864764061466],
+          [-58.176365990258006, -20.24766414952094],
+          [-58.159886498070506, -20.31207223391828],
+          [-57.962132591820506, -20.867435054803522],
+          [-57.887974876976756, -21.00082983957074],
+          [-57.712193626976756, -20.80839568151116],
+          [-57.627049584008006, -20.628568544049173],
+          [-57.492467064476756, -20.564292935974144],
+          [-57.399083275414256, -20.53600309078867],
+          [-57.407323021508006, -20.461395701235382],
+          [-57.319432396508006, -20.252817780452848],
+          [-57.503453392601756, -19.979440549366284],
+          [-57.599583763695506, -20.085237432419962],
+          [-57.649022240258006, -20.219316123741166],
+          [-57.780858177758006, -20.278583368855713],
+          [-57.816563744164256, -20.147134212217406],
+          [-57.451268334008006, -19.84257345257275],
+          [-57.333165306664256, -19.633171303573263],
+          [-56.962376732445506, -19.772803261649162],
+          [-56.728917259789256, -20.051699793107698],
+          [-56.577855248070506, -20.072339189141285],
+          [-56.498204369164256, -20.134241069948153],
+          [-56.484471459008006, -20.00267035453017],
+          [-56.470738548851756, -19.91489535438888],
+          [-56.544896263695506, -19.870989564369204],
+          [-56.544896263695506, -19.83482272085156],
+          [-56.500950951195506, -19.775387888235535],
+          [-56.446019310570506, -19.785725975346654],
+          [-56.371861595726756, -19.883904295666465],
+          [-56.314183373070506, -19.84257345257275],
+          [-56.149388451195506, -19.5736614949323],
+          [-56.152135033226756, -19.441626619607668],
+          [-55.833531517601756, -19.340586216604407],
+          [-55.847264427758006, -19.174640843033632],
+          [-55.734654564476756, -19.096796282753306],
+          [-55.847264427758006, -19.052668095567615],
+          [-55.929661888695506, -19.068244091684157],
+          [-56.435032982445506, -18.992946570857388],
+          [-56.555882591820506, -18.917614975232325],
+          [-56.713111171622224, -18.93977559648609],
+          [-56.896458763695506, -18.94359522947947],
+          [-57.061253685570506, -18.985155225378243],
+          [-57.226048607445506, -18.933203612647766],
+          [-57.160130638695506, -18.641976951015554],
+          [-57.22518147912456, -18.52296611104089],
+          [-57.220178678521194, -18.497148424613812],
+          [-57.09024158717129, -18.43353673819188],
+          [-56.89169493841206, -18.378317188868156],
+          [-56.690465111351756, -18.37892377297213],
+          [-56.544896263695506, -18.347643123424692],
+          [-56.310619065337264, -18.338898465817497],
+          [-55.770360130883006, -18.230290304334925],
+          [-55.811558861351756, -18.178108040761597],
+          [-56.003819603539256, -18.212028290139475],
+          [-56.404820580101756, -18.120689522755757],
+          [-56.695958275414256, -18.18332697020688],
+          [-57.039281029320506, -18.084140655081907],
+          [-57.1196431990464, -18.047592890893],
+          [-57.201329369164256, -17.97706093023734],
+          [-57.555638451195506, -18.095889336482557]]]),
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+
+var version_out = '8'
+
+
+//Balanceamento do Número de amostras estáveis - valor máximo 2000
+
+var amostras_flor = 2000
+var amostras_sava = 1300
+var amostras_camp = 2000
+var amostras_agro = 800
+var amostras_agua = 800
+
+
+//Número de amostras complementares
+
+var complemento_cave = 1
+var complemento_sava = 800
+var complemento_camp = 1500
+var complemento_flor = 2000
+var complemento_agro = 1
+var complemento_agua = 1
+
+
+var printa_corretos = false;
+var coleta = false;
+var add_errados = false
+
+var lista_anos = [2000]
+
+
+var regiao = 'r7'
+var limite = col6_r7
+var versao_out_reg = 'reg7_v';
+var versao_samples = 'v1'
+var dirsamples = 'projects/mapbiomas-workspace/AMOSTRAS/col7/PANTANAL/SAMPLES/';
+var RFtrees = 200
+if (coleta) {var RFtrees = 20}
+
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41')
+var bioma250mil_PANT = biomes.mask(biomes.eq(3))
+//Map.addLayer(bioma250mil_MA)
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+
+var GEDI = ee.Image('users/potapovpeter/GEDI_V27/GEDI_SAM_v27').rename('GEDI');
+
+var imageVisGEDI = {"min": 0,"max": 15,"palette":["c9f5f1","#ffbeee","#daffe0","#c0debf","08ff04","#037e07","0b240a"]};
+Map.addLayer(GEDI, imageVisGEDI,'GEDI', false);
+
+var versao_estavel2 = '1'
+var mapa_estavel_col6 = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col7/PANTANAL/PANT_amostras_estaveis85a20_col6_v'+versao_estavel2)
+Map.addLayer(mapa_estavel_col6, vis, 'mapa_estavel_col6', false);
+
+var colecao6 = ee.Image('projects/mapbiomas-workspace/public/collection6/mapbiomas_collection60_integration_v1').mask(bioma250mil_PANT);
+
+var bioma = "PANTANAL";
+
+var dirout = 'projects/mapbiomas-workspace/COLECAO7/classificacao-pantanal/';
+var bandNames = ee.List(['gcvi_median_wet','swir1_min','nir_median','green_min','evi2_median_wet','nir_min','latitude','longitude','ndvi_median_wet','gcvi_median','green_median','red_median_wet','evi2_median','green_median_wet','nir_median_wet','red_min','nir_median_dry','savi_median_wet','swir2_min','cai_median','blue_median_wet','swir1_median_dry','evi2_median_dry','ndvi_median_dry','swir1_median','swir1_stdDev','blue_min','savi_median','swir1_median_wet','swir2_median_dry',])
+
+var anos = [
+            1985,1986, 1987,1988,1989,
+            1990,1991,1992,1993,1994,
+            1995,1996,1997,1998,1999,
+            2000,2001,2002,
+            2003,2004,2005,2006,2007,
+            2008,2009,2010,2011,
+            2012, 2013,2014,2015,
+            2016,2017,
+            2018,2019,2020,2021
+            ];
+if (coleta) {var anos = lista_anos}
+
+
+var ndvi_color = '0f330f, 005000, 4B9300, 92df42, bff0bf, FFFFFF, eee4c7, ecb168, f90000'
+var visParNDFI_amp = {'min':0, 'max':300, 'palette':ndvi_color};
+
+var shuffle = function (collection, seed) {collection = collection.randomColumn('random', seed || 1).sort('random', true)
+        .map(function (feature) {var rescaled = ee.Number(feature.get('random')).multiply(1000000000).round();
+                return feature.set('new_id', rescaled);
+            });
+    var randomIdList = ee.List(collection.reduceColumns(ee.Reducer.toList(), ['new_id']).get('list'));
+    var sequentialIdList = ee.List.sequence(1, collection.size());
+    var shuffled = collection.remap(randomIdList, sequentialIdList, 'new_id');
+    return shuffled;
+};
+
+
+var asset_mosaicos_col6 = 'projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2';
+ 
+for (var i_ano=0;i_ano<anos.length; i_ano++){
+  var ano = anos[i_ano];
+
+  if      (ano == 1985) {
+    var ano1 = 1985; var ano2 = 1986; var ano3 = 1987
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 1986) {
+    var ano1 = 1986; var ano2 = 1985; var ano3 = 1987
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 2000) {
+    var ano1 = 2000; var ano2 = 1999; var ano3 = 1998
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 2001)   {
+    var ano1 = 2001; var ano2 = 2000; var ano3 = 1999
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l5'
+  }
+  else if (ano == 2002) {
+    var ano1 = 2002; var ano2 = 2001; var ano3 = 2000
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l7'
+  }
+  else if (ano == 2003) {
+    var ano1 = 2003; var ano2 = 2002; var ano3 = 2001
+     var asset1 = 'l5'; var asset2 = 'l7'; var asset3 = 'l7'
+  }
+  else if (ano == 2004) {
+    var ano1 = 2004; var ano2 = 2003; var ano3 = 2002
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+  }
+  else if (ano == 2012) {
+    var ano1 = 2012; var ano2 = 2011; var ano3 = 2010
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 2013) {
+    var ano1 = 2013; var ano2 = 2012; var ano3 = 2011
+    var asset1 = 'l8'; var asset2 = 'l7'; var asset3 = 'l5'
+  }
+  else if (ano == 2014) {
+    var ano1 = 2014; var ano2 = 2013; var ano3 = 2012
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l7'
+  }
+  else if (ano == 2015) {
+    var ano1 = 2015; var ano2 = 2014; var ano3 = 2013
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2016) {
+    var ano1 = 2016; var ano2 = 2015; var ano3 = 2014
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2017) {
+    var ano1 = 2017; var ano2 = 2016; var ano3 = 2015
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2018) {
+    var ano1 = 2018; var ano2 = 2017; var ano3 = 2016
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2019) {
+    var ano1 = 2019; var ano2 = 2018; var ano3 = 2017
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2020) {
+    var ano1 = 2020; var ano2 = 2019; var ano3 = 2018
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2021) {
+    var ano1 = 2021; var ano2 = 2020; var ano3 = 2019
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else {
+    var ano1 = ano; var ano2 = ( ano - 1); var ano3 = ( ano - 2)
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+
+    var mosaicoTotal = ee.ImageCollection(asset_mosaicos_col6)
+                        .filterMetadata('biome', 'equals', bioma)
+                        .filterMetadata('year', 'equals', ano1)
+                        .filter(ee.Filter.eq('satellite', asset1))
+                        .filterBounds(geometry)
+                        .mosaic()
+
+
+     var ll = ee.Image.pixelLonLat().clip(geometry);
+    
+    var long = ll.select('longitude').add(34.8).multiply(-1).multiply(1000).toInt16()
+    var lati = ll.select('latitude').add(5).multiply(-1).multiply(1000).toInt16()
+    
+    mosaicoTotal = mosaicoTotal.addBands(long.rename('longitude'))
+    mosaicoTotal = mosaicoTotal.addBands(lati.rename('latitude' ))
+    mosaicoTotal = mosaicoTotal.addBands(lati.rename('GEDI' ))
+    var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
+    var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
+    mosaicoTotal = mosaicoTotal.addBands(nddi_wet.rename('nddi_wet' ))
+    mosaicoTotal = mosaicoTotal.addBands(nddi_dry.rename('nddi_dry' ))
+    
+//    mosaicoTotal = mosaicoTotal.select(bandNames)
+ if (coleta) {    
+    var colecao5_ano = colecao5.select('classification_'+ano).remap(
+                  [3, 4, 5, 9,11,12,13,15,18,19,20,21,36,39,41,21,22,23,24,25,26,29,30,31,32,33],
+                  [3, 4, 3, 9,12,12,13,21,21,21,21,21,21,21,21,21,22,22,22,22,33,29,22,33,13,33])
+   Map.addLayer(mosaicoTotal, {bands: ['swir1_median', 'nir_median', 'red_median'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico', false)
+   Map.addLayer(colecao5_ano, vis, 'Classes ORIGINAIS 85 a 20', true);
+  }    
+    var BDamostras = ee.FeatureCollection(dirsamples+'pontos_train_'+versao_samples+'_'+ano).filterBounds(limite)
+
+
+    var BDflo = BDamostras.filterMetadata("reference", "equals", 3);
+    var BDsav = BDamostras.filterMetadata("reference", "equals", 4)
+    var BDcam = BDamostras.filterMetadata("reference", "equals", 12)
+    var BDagr = BDamostras.filterMetadata("reference", "equals", 21)
+    var BDagu = BDamostras.filterMetadata("reference", "equals", 33)//.map(function(feat) {return feat.set({'reference': 0})});
+
+    BDflo = shuffle(BDflo, 2).limit(amostras_flor)  
+    BDsav = shuffle(BDsav, 2).limit(amostras_sava) 
+    BDcam = shuffle(BDcam, 2).limit(amostras_camp)
+    BDagr = shuffle(BDagr, 2).limit(amostras_agro) 
+    BDagu = shuffle(BDagu, 2).limit(amostras_agua)
+
+)
+
+  var training = BDflo.merge(BDsav).merge(BDcam).merge(BDagu).merge(BDagr)
+ 
+  var classifier = ee.Classifier.smileRandomForest({numberOfTrees: RFtrees, variablesPerSplit:1})
+  
+  // classifier = classifier.setOutputMode('PROBABILITY')
+  classifier = classifier.train(training, 'reference', bandNames);
+//  print(classifier)
+  
+  var classified = mosaicoTotal.classify(classifier).mask(mosaicoTotal.select('blue_median'));
+  classified = classified.select(['classification'],['classification_'+ano]).clip(limite).toInt16() 
+  if (coleta) {    
+    Map.addLayer(classified, vis, 'RF'+ano, true)
+    Map.addLayer(ee.Image('projects/mapbiomas-workspace/COLECAO6/classificacao/PANTANAL-'+ano+'-1'), vis, 'Col 6 versão 1'+ano, true)
+    
+  }
+
+  if (i_ano == 0){ var classified85a20 = classified}  
+  else {classified85a20 = classified85a20.addBands(classified); }
+  
+}
+
+classified85a20 = classified85a20
+.set('territory', 'BRAZIL')
+.set('biome', 'PANTANAL')
+.set('source', 'arcplan')
+.set('version', version_out)
+//.set('year', )
+.set('collection_id', 7.0)
+
+  print(classified85a20)
+if (coleta) {  
+  print(classified85a20)
+} else {
+  Export.image.toAsset({
+    "image": classified85a20,
+    "description": 'PANT_col7_'+versao_out_reg+version_out,
+    "assetId": dirout + 'PANT_col7_prob_'+versao_out_reg+version_out,
+    "scale": 30,
+    "pyramidingPolicy": {
+        '.default': 'mode'
+    },
+    "maxPixels": 1e13,
+    "region": limite
+  });    
+}
+

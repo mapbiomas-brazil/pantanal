@@ -1,0 +1,346 @@
+var col6_r6 = /* color: #257e85 */ee.Geometry.Polygon(
+        [[[-57.21342301481497, -17.997709822963408],
+          [-57.14475846403372, -17.864437991826268],
+          [-56.96623063200247, -17.869666226031434],
+          [-56.95249772184622, -17.835679956125205],
+          [-57.07609391325247, -17.809532256337143],
+          [-56.945631266768096, -17.630972081046753],
+          [-56.56248307340872, -17.393271986278307],
+          [-56.63664078825247, -17.382787702792452],
+          [-56.78495621793997, -17.411618036200245],
+          [-56.90031266325247, -17.374924096008215],
+          [-56.726379866450934, -17.30972166892133],
+          [-56.3902619256305, -17.25599656216059],
+          [-56.12852311247122, -17.17297632609386],
+          [-56.12852311247122, -17.133610153075686],
+          [-56.18175812445262, -17.151372248670338],
+          [-56.13695920876473, -16.92390620703456],
+          [-56.24978258503383, -16.945765713641496],
+          [-56.33106864769738, -17.017495248453574],
+          [-56.311828509677525, -17.20453034209851],
+          [-56.497938395674346, -17.188720456342768],
+          [-56.29881119840872, -16.911692041553135],
+          [-56.14774918668997, -16.79208910682224],
+          [-56.19634557316129, -16.7842991994483],
+          [-56.4606902947133, -16.96304437883555],
+          [-56.65861344450247, -17.041723345245334],
+          [-56.79044938200247, -17.002329437819075],
+          [-56.74925065153372, -16.913005938977363],
+          [-56.21641373747122, -16.668464065949756],
+          [-56.35923600309622, -16.476292435739694],
+          [-56.61192154997122, -16.56318829447679],
+          [-56.88383317106497, -16.834155900025806],
+          [-56.93327164762747, -16.707927574063252],
+          [-57.01566910856497, -16.707927574063252],
+          [-57.04588151090872, -16.73949250821188],
+          [-57.26011490934622, -16.82364007682041],
+          [-57.08158707731497, -16.613201482998086],
+          [-57.18046403043997, -16.499995181307273],
+          [-57.25736832731497, -16.539493301654183],
+          [-57.28483414762747, -16.492094588623985],
+          [-57.36997819059622, -16.436781416074812],
+          [-57.42216324918997, -16.4321712730822],
+          [-57.453748942549346, -16.413070944081234],
+          [-57.48533463590872, -16.516453712825367],
+          [-57.609617472822784, -16.576350920454964],
+          [-57.67690873258841, -16.619123235753058],
+          [-57.775099040205596, -16.59740924968809],
+          [-57.821790934736846, -16.65399207251893],
+          [-57.821790934736846, -16.61846527224456],
+          [-57.821790934736846, -16.586880373244124],
+          [-57.79020524137747, -16.552657546095983],
+          [-57.777845622236846, -16.497361686260373],
+          [-57.79569840543997, -16.46575695091045],
+          [-57.97422623747122, -16.32083610828229],
+          [-58.03465104215872, -16.315564230354365],
+          [-58.10537552946341, -16.726998679918616],
+          [-58.31136918180716, -16.766778809465052],
+          [-58.27635026090872, -16.600041378707164],
+          [-58.22691178434622, -16.600041378707164],
+          [-58.21867203825247, -16.531594323783985],
+          [-58.25987076872122, -16.536860344954402],
+          [-58.33128190153372, -16.492094588623985],
+          [-58.44663834684622, -16.513162118625885],
+          [-58.50706315153372, -16.6500449753938],
+          [-58.50706315153372, -16.983942778429757],
+          [-58.33677506559622, -17.356574367087067],
+          [-57.86161637418997, -17.60544899664405],
+          [-57.68034196012747, -17.801687198553825],
+          [-57.55949235075247, -18.10216636532389]]]),
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+          
+var version_out = '8'
+
+//Balanceamento do Número de amostras estáveis - valor máximo 2000
+
+var amostras_flor = 2000
+var amostras_sava = 1500
+var amostras_camp = 2300
+var amostras_agro = 800
+var amostras_agua = 800
+
+//Número de amostras complementares
+
+var complemento_cave = 2000
+var complemento_sava = 2000
+var complemento_camp = 2000
+var complemento_flor = 2000
+var complemento_agro = 1
+var complemento_agua = 1
+
+
+var printa_corretos = false;
+var coleta = false;
+var add_errados = false
+
+var lista_anos = [2000]
+
+
+var regiao = 'r6'
+var limite = col6_r6
+var versao_out_reg = 'reg6_v';
+var versao_samples = 'v1'
+var dirsamples = 'projects/mapbiomas-workspace/AMOSTRAS/col7/PANTANAL/SAMPLES/';
+var RFtrees = 200
+if (coleta) {var RFtrees = 20}
+
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41')
+var bioma250mil_PANT = biomes.mask(biomes.eq(3))
+//Map.addLayer(bioma250mil_MA)
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+
+var GEDI = ee.Image('users/potapovpeter/GEDI_V27/GEDI_SAM_v27').rename('GEDI');
+
+var imageVisGEDI = {"min": 0,"max": 15,"palette":["c9f5f1","#ffbeee","#daffe0","#c0debf","08ff04","#037e07","0b240a"]};
+Map.addLayer(GEDI, imageVisGEDI,'GEDI', false);
+
+var versao_estavel2 = '1'
+var mapa_estavel_col6 = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col7/PANTANAL/PANT_amostras_estaveis85a20_col6_v'+versao_estavel2)
+Map.addLayer(mapa_estavel_col6, vis, 'mapa_estavel_col6', false);
+
+var colecao6 = ee.Image('projects/mapbiomas-workspace/public/collection6/mapbiomas_collection60_integration_v1').mask(bioma250mil_PANT);
+
+var bioma = "PANTANAL";
+
+var dirout = 'projects/mapbiomas-workspace/COLECAO7/classificacao-pantanal/';
+
+var bandNames = ee.List(['gcvi_median_wet','swir1_min','nir_median','green_min','evi2_median_wet','nir_min','latitude','longitude','ndvi_median_wet','gcvi_median','green_median','red_median_wet','evi2_median','green_median_wet','nir_median_wet','red_min','nir_median_dry','savi_median_wet','swir2_min','cai_median','blue_median_wet','swir1_median_dry','evi2_median_dry','ndvi_median_dry','swir1_median','swir1_stdDev','blue_min','savi_median','swir1_median_wet','swir2_median_dry',])
+
+var anos = [
+            1985,1986, 1987,1988,1989,
+            1990,1991,1992,1993,1994,
+            1995,1996,1997,1998,1999,
+            2000,2001,2002,
+            2003,2004,2005,2006,2007,
+            2008,2009,2010,2011,
+            2012, 2013,2014,2015,
+            2016,2017,
+            2018,2019,2020,2021
+            ];
+if (coleta) {var anos = lista_anos}
+
+
+var ndvi_color = '0f330f, 005000, 4B9300, 92df42, bff0bf, FFFFFF, eee4c7, ecb168, f90000'
+var visParNDFI_amp = {'min':0, 'max':300, 'palette':ndvi_color};
+
+var shuffle = function (collection, seed) {collection = collection.randomColumn('random', seed || 1).sort('random', true)
+        .map(function (feature) {var rescaled = ee.Number(feature.get('random')).multiply(1000000000).round();
+                return feature.set('new_id', rescaled);
+            });
+    var randomIdList = ee.List(collection.reduceColumns(ee.Reducer.toList(), ['new_id']).get('list'));
+    var sequentialIdList = ee.List.sequence(1, collection.size());
+    var shuffled = collection.remap(randomIdList, sequentialIdList, 'new_id');
+    return shuffled;
+};
+
+
+var asset_mosaicos_col6 = 'projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2';
+ 
+for (var i_ano=0;i_ano<anos.length; i_ano++){
+  var ano = anos[i_ano];
+
+  if      (ano == 1985) {
+    var ano1 = 1985; var ano2 = 1986; var ano3 = 1987
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 1986) {
+    var ano1 = 1986; var ano2 = 1985; var ano3 = 1987
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 2000) {
+    var ano1 = 2000; var ano2 = 1999; var ano3 = 1998
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 2001)   {
+    var ano1 = 2001; var ano2 = 2000; var ano3 = 1999
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l5'
+  }
+  else if (ano == 2002) {
+    var ano1 = 2002; var ano2 = 2001; var ano3 = 2000
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l7'
+  }
+  else if (ano == 2003) {
+    var ano1 = 2003; var ano2 = 2002; var ano3 = 2001
+     var asset1 = 'l5'; var asset2 = 'l7'; var asset3 = 'l7'
+  }
+  else if (ano == 2004) {
+    var ano1 = 2004; var ano2 = 2003; var ano3 = 2002
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+  }
+  else if (ano == 2012) {
+    var ano1 = 2012; var ano2 = 2011; var ano3 = 2010
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 2013) {
+    var ano1 = 2013; var ano2 = 2012; var ano3 = 2011
+    var asset1 = 'l8'; var asset2 = 'l7'; var asset3 = 'l5'
+  }
+  else if (ano == 2014) {
+    var ano1 = 2014; var ano2 = 2013; var ano3 = 2012
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l7'
+  }
+  else if (ano == 2015) {
+    var ano1 = 2015; var ano2 = 2014; var ano3 = 2013
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2016) {
+    var ano1 = 2016; var ano2 = 2015; var ano3 = 2014
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2017) {
+    var ano1 = 2017; var ano2 = 2016; var ano3 = 2015
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2018) {
+    var ano1 = 2018; var ano2 = 2017; var ano3 = 2016
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2019) {
+    var ano1 = 2019; var ano2 = 2018; var ano3 = 2017
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2020) {
+    var ano1 = 2020; var ano2 = 2019; var ano3 = 2018
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else if (ano == 2021) {
+    var ano1 = 2021; var ano2 = 2020; var ano3 = 2019
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+  }
+  else {
+    var ano1 = ano; var ano2 = ( ano - 1); var ano3 = ( ano - 2)
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+
+    var mosaicoTotal = ee.ImageCollection(asset_mosaicos_col6)
+                        .filterMetadata('biome', 'equals', bioma)
+                        .filterMetadata('year', 'equals', ano1)
+                        .filter(ee.Filter.eq('satellite', asset1))
+                        .filterBounds(geometry)
+                        .mosaic()
+
+
+     var ll = ee.Image.pixelLonLat().clip(geometry);
+    
+    var long = ll.select('longitude').add(34.8).multiply(-1).multiply(1000).toInt16()
+    var lati = ll.select('latitude').add(5).multiply(-1).multiply(1000).toInt16()
+    
+    mosaicoTotal = mosaicoTotal.addBands(long.rename('longitude'))
+    mosaicoTotal = mosaicoTotal.addBands(lati.rename('latitude' ))
+    mosaicoTotal = mosaicoTotal.addBands(lati.rename('GEDI' ))
+    var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
+    var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
+    mosaicoTotal = mosaicoTotal.addBands(nddi_wet.rename('nddi_wet' ))
+    mosaicoTotal = mosaicoTotal.addBands(nddi_dry.rename('nddi_dry' ))
+    
+//    mosaicoTotal = mosaicoTotal.select(bandNames)
+ if (coleta) {    
+    var colecao5_ano = colecao5.select('classification_'+ano).remap(
+                  [3, 4, 5, 9,11,12,13,15,18,19,20,21,36,39,41,21,22,23,24,25,26,29,30,31,32,33],
+                  [3, 4, 3, 9,12,12,13,21,21,21,21,21,21,21,21,21,22,22,22,22,33,29,22,33,13,33])
+   Map.addLayer(mosaicoTotal, {bands: ['swir1_median', 'nir_median', 'red_median'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico', false)
+   Map.addLayer(colecao5_ano, vis, 'Classes ORIGINAIS 85 a 20', true);
+  }    
+    var BDamostras = ee.FeatureCollection(dirsamples+'pontos_train_'+versao_samples+'_'+ano).filterBounds(limite)
+
+
+    var BDflo = BDamostras.filterMetadata("reference", "equals", 3);
+    var BDsav = BDamostras.filterMetadata("reference", "equals", 4)
+    var BDcam = BDamostras.filterMetadata("reference", "equals", 12)
+    var BDagr = BDamostras.filterMetadata("reference", "equals", 21)
+    var BDagu = BDamostras.filterMetadata("reference", "equals", 33)//.map(function(feat) {return feat.set({'reference': 0})});
+
+    BDflo = shuffle(BDflo, 2).limit(amostras_flor)  
+    BDsav = shuffle(BDsav, 2).limit(amostras_sava) 
+    BDcam = shuffle(BDcam, 2).limit(amostras_camp)
+    BDagr = shuffle(BDagr, 2).limit(amostras_agro) 
+    BDagu = shuffle(BDagu, 2).limit(amostras_agua)
+
+
+
+  var training = BDflo.merge(BDsav).merge(BDcam).merge(BDagu).merge(BDagr)
+
+  var classifier = ee.Classifier.smileRandomForest({numberOfTrees: RFtrees, variablesPerSplit:1})
+  
+  // classifier = classifier.setOutputMode('PROBABILITY')
+  classifier = classifier.train(training, 'reference', bandNames);
+//  print(classifier)
+  
+  var classified = mosaicoTotal.classify(classifier).mask(mosaicoTotal.select('blue_median'));
+  classified = classified.select(['classification'],['classification_'+ano]).clip(limite).toInt16() 
+  if (coleta) {    
+    Map.addLayer(classified, vis, 'RF'+ano, true)
+    Map.addLayer(ee.Image('projects/mapbiomas-workspace/COLECAO6/classificacao/PANTANAL-'+ano+'-1'), vis, 'Col 6 versão 1'+ano, true)
+    
+  }
+
+  if (i_ano == 0){ var classified85a20 = classified}  
+  else {classified85a20 = classified85a20.addBands(classified); }
+  
+}
+
+classified85a20 = classified85a20
+.set('territory', 'BRAZIL')
+.set('biome', 'PANTANAL')
+.set('source', 'arcplan')
+.set('version', version_out)
+//.set('year', )
+.set('collection_id', 7.0)
+
+  print(classified85a20)
+if (coleta) {  
+  print(classified85a20)
+} else {
+  Export.image.toAsset({
+    "image": classified85a20,
+    "description": 'PANT_col7_'+versao_out_reg+version_out,
+    "assetId": dirout + 'PANT_col7_prob_'+versao_out_reg+version_out,
+    "scale": 30,
+    "pyramidingPolicy": {
+        '.default': 'mode'
+    },
+    "maxPixels": 1e13,
+    "region": limite
+  });    
+}
+

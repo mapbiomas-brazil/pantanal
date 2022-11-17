@@ -1,0 +1,222 @@
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+
+var ano = 1991
+var val_alagado = 480 /// valores maiores incluem mais áreas
+var val_veg_umida = 850 /// valores maiores incluem menos áreas
+
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41')
+var bioma_Pantanal = biomes.mask(biomes.eq(3))
+
+var versao_out = 'v9'
+var versao_pt = 'v2'
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col7/PANTANAL/SAMPLES/';
+
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41')
+var bioma250mil_PANT = biomes.mask(biomes.eq(3))
+//Map.addLayer(bioma250mil_MA)
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+
+
+var bioma = "PANTANAL";
+
+var dirasset = 'projects/nexgenmap/MapBiomas2/LANDSAT/mosaics';
+var dirasset7 = 'projects/nexgenmap/MapBiomas2/LANDSAT/mosaics-landsat-7';
+
+var ndvi_color = '0f330f, 005000, 4B9300, 92df42, bff0bf, FFFFFF, eee4c7, ecb168, f90000'
+var visParNDFI_amp = {'min':0, 'max':300, 'palette':ndvi_color};
+
+var anos = [
+            1985,1986, 1987,1988,1989,
+            1990,1991,1992,1993,1994,
+            1995,1996,1997,1998,1999,
+            2000,2001,2002,
+            2003,2004,2005,2006,2007,
+            2008,2009,
+            2010,2011,
+            2012, 2013,2014,2015,
+            2016,2017,
+            2018,2019,2020,
+            2021
+            ];
+
+            
+var ndvi_color = '0f330f, 005000, 4B9300, 92df42, bff0bf, FFFFFF, eee4c7, ecb168, f90000'
+var visParNDFI_amp = {'min':0, 'max':300, 'palette':ndvi_color};
+
+var asset_mosaicos_col6 = 'projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2';
+ 
+for (var i_ano=0;i_ano<anos.length; i_ano++){
+  var ano = anos[i_ano];
+
+  if      (ano == 1985) {
+    var ano1 = 1985; var ano2 = 1986; var ano3 = 1987
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 1986) {
+    var ano1 = 1986; var ano2 = 1985; var ano3 = 1987
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+  }
+  else if (ano == 2000) {
+    var ano1 = 2000; var ano2 = 1999; var ano3 = 1998
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5'
+    var amostras_agro = 1500
+  }
+  else if (ano == 2001)   {
+    var ano1 = 2001; var ano2 = 2000; var ano3 = 1999
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l5'
+    var amostras_agro = 1600
+  }
+  else if (ano == 2002) {
+    var ano1 = 2002; var ano2 = 2001; var ano3 = 2000
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l7'
+    var amostras_agro = 1700
+  }
+  else if (ano == 2003) {
+    var ano1 = 2003; var ano2 = 2002; var ano3 = 2001
+     var asset1 = 'l5'; var asset2 = 'l7'; var asset3 = 'l7'
+    var amostras_agro = 1800
+  }
+  else if (ano == 2004) {
+    var ano1 = 2004; var ano2 = 2003; var ano3 = 2002
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1900
+  }
+  else if (ano == 2012) {
+    var ano1 = 2012; var ano2 = 2011; var ano3 = 2010
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5'
+    var amostras_agro = 2000
+  }
+  else if (ano == 2013) {
+    var ano1 = 2013; var ano2 = 2012; var ano3 = 2011
+    var asset1 = 'l8'; var asset2 = 'l7'; var asset3 = 'l5'
+    var amostras_agro = 2100
+  }
+  else if (ano == 2014) {
+    var ano1 = 2014; var ano2 = 2013; var ano3 = 2012
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l7'
+    var amostras_agro = 2200
+  }
+  else if (ano == 2015) {
+    var ano1 = 2015; var ano2 = 2014; var ano3 = 2013
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2300
+  }
+  else if (ano == 2016) {
+    var ano1 = 2016; var ano2 = 2015; var ano3 = 2014
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2400
+  }
+  else if (ano == 2017) {
+    var ano1 = 2017; var ano2 = 2016; var ano3 = 2015
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2500
+  }
+  else if (ano == 2018) {
+    var ano1 = 2018; var ano2 = 2017; var ano3 = 2016
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2600
+  }
+  else if (ano == 2019) {
+    var ano1 = 2019; var ano2 = 2018; var ano3 = 2017
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2700
+  }
+  else if (ano == 2020) {
+    var ano1 = 2020; var ano2 = 2019; var ano3 = 2018
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2800
+  }
+  else if (ano == 2021) {
+    var ano1 = 2021; var ano2 = 2020; var ano3 = 2019
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2900
+  }
+  else {
+    var ano1 = ano; var ano2 = ( ano - 1); var ano3 = ( ano - 2)
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+    var amostras_agro = 3000
+  }
+
+    var mosaicoTotal = ee.ImageCollection(asset_mosaicos_col6)
+                        .filterMetadata('biome', 'equals', bioma)
+                        .filterMetadata('year', 'equals', ano1)
+                        .filter(ee.Filter.eq('satellite', asset1))
+                        .filterBounds(geometry)
+                        .mosaic()
+
+      
+      // print(mosaicoTotal)
+      
+      var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
+      var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
+      // print(mosaicoTotal)
+  
+      // Map.addLayer(mosaicoTotal, {bands: ['swir1_median', 'nir_median', 'red_median'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico median '+ano, false)
+      // Map.addLayer(mosaicoTotal, {bands: ['swir1_median_dry','nir_median_dry','red_median_dry'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico seco '+ano, false)
+       Map.addLayer(mosaicoTotal, {bands: ['swir1_median_wet','nir_median_wet','red_median_wet'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico umido '+ano, false)
+       //Map.addLayer(mosaicoTotal.select('ndwi_median_wet'), {'min':9000, 'max':17000, 'palette': 'red,orange,white,cyan,blue'}, 'ndwi_wet '+ano, false)
+      // Map.addLayer(mosaicoTotal.select('ndwi_median_dry'), {'min':9000, 'max':17000, 'palette': 'red,orange,white,cyan,blue'}, 'ndwi_dry '+ano, false)
+      Map.addLayer(nddi_wet, {'min':900, 'max':1300, 'palette': 'blue,cyan,white,orange,red'}, 'nddi_wet '+ano, false)
+      // Map.addLayer(nddi_dry, {'min':900, 'max':1300, 'palette': 'blue,cyan,white,orange,red'}, 'nddi_dry '+ano, false)
+  
+  var agua_maxima = nddi_wet.lt(1020)    .and(mosaicoTotal.select('shade_max').gt(90))    .selfMask()
+//    .and(mosaicoTotal.select('gv_median_wet').lt(8))
+//    .and(mosaicoTotal.select('soil_median_wet').lt(8))
+  var agua_minima = nddi_dry.lt(1020).selfMask()
+
+
+   var cheia_maxima3 = nddi_wet.lt(1140).selfMask().selfMask()
+   var cheia_minima = nddi_dry.lt(1140).selfMask().selfMask()
+ 
+  
+      Map.addLayer(cheia_maxima3, {'palette': 'cyan'}, 'alag nddi_wet '+ano, false)
+//      Map.addLayer(cheia_maxima2, {'palette': 'red'}, 'cheia_maxima NDWI gv'+ano, false)
+//      Map.addLayer(cheia_maxima, {'palette': 'cyan'}, 'cheia_maxima '+ano, false)
+      Map.addLayer(agua_maxima, {'palette': 'blue'}, 'agua_maxima '+ano, false)
+
+  if (i_ano == 0){ 
+    var class_agua_maxima = cheia_maxima3.remap([1],[11]).blend(agua_maxima.remap([1],[33])).rename('classification_'+ano)
+    var class_cheia_minima = cheia_minima.remap([1],[11]).blend(agua_minima.remap([1],[33])).rename('classification_'+ano)
+  }  
+  else {
+    class_agua_maxima = class_agua_maxima.addBands(cheia_maxima3.remap([1],[11]).blend(agua_maxima.remap([1],[33])).rename('classification_'+ano)); 
+    class_cheia_minima = class_cheia_minima.addBands(cheia_minima.rename('class_max_'+ano)); 
+  }
+
+
+}
+      Map.addLayer(class_agua_maxima.select('classification_1988'), vis, 'classification_1988', false)
+
+//print(class_agua_maxima)
+
+Export.image.toAsset({
+  "image": class_agua_maxima,
+  "description": 'PANT_col7_agua_e_alag_max_'+versao_out,
+  "assetId": dirout + 'PANT_col7_agua_e_alag_max_'+versao_out,
+  "scale": 30,
+  "pyramidingPolicy": {
+      '.default': 'mode'
+  },
+  "maxPixels": 1e13,
+  "region": geometry
+});    
