@@ -1,0 +1,115 @@
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+
+var bioma = "PANTANAL"
+
+var version_out = 'v17'
+var min_connect_pixel = 6
+var prefixo_out = 'PANT_col6_p08c_'
+var dirout = 'projects/mapbiomas-workspace/COLECAO6/classificacao-test/'
+
+var class4 = ee.Image('projects/mapbiomas-workspace/COLECAO6/classificacao-test/PANT_col6_p08b_v16')
+
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = { 
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+var vis2 = {
+    'bands': 'classification_2020',
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+
+Map.addLayer(class4, vis2, 'class4', true);
+
+var filtrofreq = function(mapbiomas){
+  var exp = '100*((b(0)+b(1)+b(2)+b(3)+b(4)+b(5)+b(6)+b(7)+b(8)+b(9)+b(10)+b(11)+b(12)+b(13)+b(14)+b(15)' +
+      '+b(16)+b(17)+b(18)+b(19)+b(20)+b(21)+b(22)+b(23)+b(24)+b(25)+b(26)+b(27)+b(28)+b(29)+b(30)+b(31)+b(32)+b(33)+b(34)+b(35))/36 )';
+  
+  // get frequency
+  var floFreq = mapbiomas.eq(3).expression(exp);
+  var savFreq = mapbiomas.eq(4).expression(exp);
+  var graFreq = mapbiomas.eq(12).expression(exp);
+  var aguFreq = mapbiomas.eq(33).expression(exp);
+
+  //////Máscara de vegetacao nativa e agua (freq >95%)
+  var vegMask = ee.Image(0).where((floFreq.add(savFreq).add(graFreq).add(aguFreq)).gt(97), 1) //.add(aflFreq).add(umdFreq).add(aguFreq)
+  
+  var  vegMap = ee.Image(0)
+                          .where(vegMask.eq(1).and(savFreq.gt(70)), 4)
+                          .where(vegMask.eq(1).and(floFreq.gt(70)), 3)
+                          .where(vegMask.eq(1).and(graFreq.gt(70)), 12)
+  var  vegMap2 = ee.Image(0)
+                          .where(vegMask.eq(1).and(class4.select('classification_1986').eq( 4)).and(class4.select('classification_2019').eq( 4)).and(savFreq.gt(10)), 4)
+                          .where(vegMask.eq(1).and(class4.select('classification_1986').eq( 3)).and(class4.select('classification_2019').eq( 3)).and(floFreq.gt(10)), 3)
+                          .where(vegMask.eq(1).and(class4.select('classification_1986').eq(12)).and(class4.select('classification_2019').eq(12)).and(graFreq.gt(10)), 12)
+  var  vegMap3 = ee.Image(0)
+                          .where(vegMask.eq(1).and(class4.select('classification_1985').eq( 4)).and(class4.select('classification_2020').eq( 4)).and(savFreq.gt(10)), 4)
+                          .where(vegMask.eq(1).and(class4.select('classification_1985').eq( 3)).and(class4.select('classification_2020').eq( 3)).and(floFreq.gt(10)), 3)
+                          .where(vegMask.eq(1).and(class4.select('classification_1985').eq(12)).and(class4.select('classification_2020').eq(12)).and(graFreq.gt(10)), 12)
+
+
+  vegMap = vegMap.updateMask(vegMap.neq(0))
+  Map.addLayer(vegMap, vis, 'vegetacao estavel', true);
+
+  vegMap2 = vegMap2.updateMask(vegMap2.neq(0))
+  Map.addLayer(vegMap2, vis, 'vegetacao estavel2', true);
+
+  vegMap3 = vegMap3.updateMask(vegMap3.neq(0))
+  Map.addLayer(vegMap3, vis, 'vegetacao estavel3', true);
+
+  var saida = mapbiomas.where(vegMap, vegMap)
+  saida = saida.where(vegMap2, vegMap2)
+  saida = saida.where(vegMap3, vegMap3)
+
+  return saida;
+}
+
+var saida = filtrofreq(class4)
+
+Map.addLayer(class4, vis2, 'image');
+
+
+var anos = ['1985','1986','1987','1988','1989','1990','1991','1992','1993','1994','1995','1996','1997','1998','1999','2000','2001','2002','2003','2004','2005','2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020'];
+for (var i_ano=0;i_ano<anos.length; i_ano++){  
+  var ano = anos[i_ano]; 
+  var agua_ano = class4.select('classification_'+ano).mask(class4.select('classification_'+ano).eq(33))
+  
+  if (i_ano == 0){ var class_outTotal = saida.select('classification_'+ano).blend(agua_ano) }  
+  else {class_outTotal = class_outTotal.addBands(saida.select('classification_'+ano).blend(agua_ano)); }
+}
+
+Map.addLayer(class_outTotal, vis2, 'filtered');
+
+var class_v10 = ee.Image('projects/mapbiomas-workspace/COLECAO6/classificacao-test/PANT_col6_p05_v11')
+Map.addLayer(class_v10, vis2, 'class_v10 - col 6 primeira versão ');
+
+Export.image.toAsset({
+    'image': class_outTotal,
+    'description': prefixo_out+version_out,
+    'assetId': dirout+prefixo_out+version_out,
+    'pyramidingPolicy': {
+        '.default': 'mode'
+    },
+    'region': geometry,
+    'scale': 30,
+    'maxPixels': 1e13
+});
+

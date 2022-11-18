@@ -1,0 +1,71 @@
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+            
+
+var bioma = "MATAATLANTICA"
+
+var version_out = 'v16'
+var min_connect_pixel = 6
+var prefixo_out = 'PANT_col6_p07_'
+var dirout = 'projects/mapbiomas-workspace/COLECAO6/classificacao-test/'
+
+var class4GAP = ee.Image('projects/mapbiomas-workspace/COLECAO6/classificacao-test/PANT_col6_p06_v16')
+
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var pal = palettes.get('classification2');
+var vis = {
+      bands: 'classification_1985',
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+    };
+var vis2 = {
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+Map.addLayer(class4GAP, vis, 'class4GAP');
+
+
+var anos = ['1985','1986','1987','1988','1989','1990','1991','1992','1993','1994','1995','1996','1997','1998','1999','2000','2001','2002','2003','2004','2005','2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020'];
+
+for (var i_ano=0;i_ano<anos.length; i_ano++){  
+  var ano = anos[i_ano]; 
+  
+  var moda = class4GAP.select('classification_'+ano).focal_mode(2, 'square', 'pixels')
+  moda = moda.mask(class4GAP.select('classification_'+ano+'_conn').lte(min_connect_pixel))
+  var class_out = class4GAP.select('classification_'+ano).blend(moda)
+  
+  if (i_ano == 0){ var class_outTotal = class_out }  
+  else {class_outTotal = class_outTotal.addBands(class_out); }
+}
+
+Map.addLayer(class_outTotal, vis, 'class4 MODA');
+
+
+Export.image.toAsset({
+    'image': class_outTotal,
+    'description': prefixo_out+version_out,
+    'assetId': dirout+prefixo_out+version_out,
+    'pyramidingPolicy': {
+        '.default': 'mode'
+    },
+    'region': geometry,
+    'scale': 30,
+    'maxPixels': 1e13
+});
+

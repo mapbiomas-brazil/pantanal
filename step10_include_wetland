@@ -1,0 +1,88 @@
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+
+var bioma = "PANTANAL"
+
+var version_out = 'v15'
+var min_connect_pixel = 6
+var prefixo_out = 'PANT_col6_p10b_'
+var dirout = 'projects/mapbiomas-workspace/COLECAO6/classificacao-test/'
+
+var class4 = ee.Image('projects/mapbiomas-workspace/COLECAO6/classificacao-test/PANT_col6_p10a_v15')
+
+var alag_max = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col6/PANTANAL/SAMPLES/PANT_col6_alag_max_v15')
+
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+var vis2 = {
+    'bands': 'classification_2020',
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+
+Map.addLayer(class4, vis2, 'class4', true);
+Map.addLayer(alag_max.select('class_max_2020'), vis, 'alag_max', true);
+
+var anos = ['1985', '1986', '1987','1988', '1989', '1990','1991', '1992', '1993','1994', '1995', '1996','1997', '1998', '1999','2000', '2001', '2002','2003', '2004', '2005','2006', '2007', '2008','2009', '2010', '2011','2012', '2013', '2014','2015', '2016', '2017', '2018', '2019','2020']
+
+var colList = ee.List([])
+for (var i_ano=0;i_ano<anos.length; i_ano++){
+  var ano = anos[i_ano];
+  var colList = colList.add(alag_max.select(['class_max_'+ano],['classification']))
+}
+var imc_carta = ee.ImageCollection(colList)
+
+var img1 =  ee.Image(imc_carta.first());
+
+var alag_max_36anos = imc_carta.reduce(ee.Reducer.sum());
+var alag_mais_3 = alag_max_36anos.gte(3).selfMask()
+
+Map.addLayer(alag_mais_3, vis, 'alag_mais_3', true);
+
+var anos = ['1985','1986','1987','1988','1989','1990','1991','1992','1993','1994','1995','1996','1997','1998','1999','2000','2001','2002','2003','2004','2005','2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020'];
+for (var i_ano=0;i_ano<anos.length; i_ano++){  
+  var ano = anos[i_ano]; 
+  var campo_ano = class4.select('classification_'+ano).mask(class4.select('classification_'+ano).eq(12))
+  var alag_ano = alag_max.select('class_max_'+ano).mask(campo_ano).mask(alag_mais_3)
+  alag_ano = alag_ano.remap([1],[11]).rename('classification_'+ano)
+  
+  var saida_ano = class4.select('classification_'+ano).blend(alag_ano)
+  
+  if (i_ano == 0){ var class_outTotal = saida_ano }  
+  else {class_outTotal = class_outTotal.addBands(saida_ano); }
+}
+
+Map.addLayer(class_outTotal, vis2, 'filtered');
+
+
+Export.image.toAsset({
+    'image': class_outTotal,
+    'description': prefixo_out+version_out,
+    'assetId': dirout+prefixo_out+version_out,
+    'pyramidingPolicy': {
+        '.default': 'mode'
+    },
+    'region': geometry,
+    'scale': 30,
+    'maxPixels': 1e13
+});
+

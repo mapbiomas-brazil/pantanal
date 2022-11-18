@@ -1,0 +1,104 @@
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+
+var ano = 1991
+
+var versao_out = 'v15'
+var versao_pt = 'v2'
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col6/PANTANAL/SAMPLES/';
+
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41')
+var bioma250mil_PANT = biomes.mask(biomes.eq(3))
+//Map.addLayer(bioma250mil_MA)
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+
+var bioma = "PANTANAL";
+
+var dirasset = 'projects/nexgenmap/MapBiomas2/LANDSAT/mosaics';
+var dirasset7 = 'projects/nexgenmap/MapBiomas2/LANDSAT/mosaics-landsat-7';
+
+var ndvi_color = '0f330f, 005000, 4B9300, 92df42, bff0bf, FFFFFF, eee4c7, ecb168, f90000'
+var visParNDFI_amp = {'min':0, 'max':300, 'palette':ndvi_color};
+
+var anos = [
+            1985,1986, 1987,1988,1989,1990,1991,1992,1993,1994,
+            1995,1996,1997,1998,1999,2000,2001,2002, 
+            2003,2004,2005,2006,2007,2008,2009,2010,2011,
+            2012,2013,2014,2015,2016,2017,2018,2019,
+            2020
+            ];
+
+for (var i_ano=0;i_ano<anos.length; i_ano++){
+  var ano = anos[i_ano];
+
+  if (ano == 2000) {
+    var asset = dirasset7;
+  }
+  else if (ano == 2001)   {
+    var asset = dirasset7;
+  }
+  else if (ano == 2002) {
+    var asset = dirasset7;
+  }
+  else if (ano == 2012) {
+    var asset = dirasset7;
+  }
+  else {
+    var asset = dirasset;
+  }
+  var limite = geometry
+    
+      var mosaicoTotal = ee.ImageCollection(asset)
+                          .filterMetadata('biome', 'equals', bioma)
+                          .filterMetadata('year', 'equals', ano)
+                          .filterMetadata('version','equals','3')
+                          .filterBounds(limite)
+                          .mosaic().mask(bioma_Pantanal)
+      
+      var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
+      var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
+
+  var cheia_maxima = nddi_wet.lt(1140).selfMask()
+
+  if (i_ano == 0){ 
+    var class_cheia_maxima = cheia_maxima.rename('class_max_'+ano)
+  }  
+  else {
+    class_cheia_maxima = class_cheia_maxima.addBands(cheia_maxima.rename('class_max_'+ano)); 
+
+  }
+
+
+}
+
+Export.image.toAsset({
+  "image": class_cheia_maxima,
+  "description": 'PANT_col6_alag_max_'+versao_out,
+  "assetId": dirout + 'PANT_col6_alag_max_'+versao_out,
+  "scale": 30,
+  "pyramidingPolicy": {
+      '.default': 'mode'
+  },
+  "maxPixels": 1e13,
+  "region": limite
+});    
+

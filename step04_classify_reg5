@@ -1,0 +1,182 @@
+var col6_r5 = 
+    /* color: #00ffff */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.70182810417243, -19.580603043063117],
+          [-57.28984079948493, -19.37863245673745],
+          [-57.52055369010993, -18.71400459754232],
+          [-57.34477244010993, -18.255547181020336],
+          [-57.67985544792243, -17.51845508310795],
+          [-57.82542429557868, -17.561666663357386],
+          [-57.7294471986304, -17.84596953412538],
+          [-57.56587229362555, -18.198154158969405],
+          [-57.815591812859296, -18.974746844015122],
+          [-58.02867136589118, -19.512013089456957],
+          [-57.93803415885993, -19.55472346682458]]]),
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+
+var amostras_flor = 2000
+var amostras_sava = 1500
+var amostras_camp = 2000
+var amostras_agro = 700
+var amostras_agua = 800
+var regiao = 'r5'
+var limite = col6_r5
+var versao_out = 'reg5_v15';
+var versao_samples = 'v10'
+var dirsamples = 'projects/mapbiomas-workspace/AMOSTRAS/col6/PANTANAL/SAMPLES/';
+var RFtrees = 200
+
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 45,
+    'palette': palettes.get('classification5')
+};
+
+var GEDI = ee.Image('users/potapovpeter/GEDI_V27/GEDI_SAM_v27').rename('GEDI');
+
+var imageVisGEDI = {"min": 0,"max": 15,"palette":["c9f5f1","#ffbeee","#daffe0","#c0debf","08ff04","#037e07","0b240a"]};
+Map.addLayer(GEDI, imageVisGEDI,'GEDI', false);
+
+var versao_estavel2 = '1'
+var mapa_estavel_col6 = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col6/PANTANAL/PANT_amostras_estaveis85a20_col6_v'+versao_estavel2)
+Map.addLayer(mapa_estavel_col6, vis, 'mapa_estavel_col5', false);
+
+var colecao5 = ee.Image('projects/mapbiomas-workspace/public/collection5/mapbiomas_collection50_integration_v1')
+
+var bioma = "PANTANAL";
+
+var dirasset = 'projects/nexgenmap/MapBiomas2/LANDSAT/mosaics';
+var dirasset7 = 'projects/nexgenmap/MapBiomas2/LANDSAT/mosaics-landsat-7';
+var dirout = 'projects/mapbiomas-workspace/COLECAO6/classificacao-test/';
+
+var bandNames = ee.List(['gcvi_median_wet','swir1_min','nir_median','green_min','evi2_median_wet','nir_min','latitude','longitude','ndvi_median_wet','gcvi_median','green_median','red_median_wet','evi2_median','green_median_wet','nir_median_wet','red_min','nir_median_dry','savi_median_wet','swir2_min','cai_median','blue_median_wet','swir1_median_dry','evi2_median_dry','ndvi_median_dry','swir1_median','swir1_stdDev','blue_min','savi_median','swir1_median_wet','swir2_median_dry',])
+
+var anos = [
+            1985,1986, 1987,1988,1989,
+            1990,1991,1992,1993,1994,
+            1995,1996,1997,1998,1999,
+            2000,2001,2002,
+            2003,2004,2005,2006,2007,
+            2008,2009,2010,2011,
+            2012, 2013,2014,2015,
+            2016,2017,
+            2018,2019,2020
+            ];
+
+
+var ndvi_color = '0f330f, 005000, 4B9300, 92df42, bff0bf, FFFFFF, eee4c7, ecb168, f90000'
+var visParNDFI_amp = {'min':0, 'max':300, 'palette':ndvi_color};
+
+var shuffle = function (collection, seed) {collection = collection.randomColumn('random', seed || 1).sort('random', true)
+        .map(function (feature) {var rescaled = ee.Number(feature.get('random')).multiply(1000000000).round();
+                return feature.set('new_id', rescaled);
+            });
+    var randomIdList = ee.List(collection.reduceColumns(ee.Reducer.toList(), ['new_id']).get('list'));
+    var sequentialIdList = ee.List.sequence(1, collection.size());
+    var shuffled = collection.remap(randomIdList, sequentialIdList, 'new_id');
+    return shuffled;
+};
+
+
+for (var i_ano=0;i_ano<anos.length; i_ano++){
+  var ano = anos[i_ano];
+  if (ano == 2000) {
+    var asset = dirasset7;
+  }
+  else if (ano == 2001)   {
+    var asset = dirasset7;
+  }
+  else if (ano == 2002) {
+    var asset = dirasset7;
+  }
+  else if (ano == 2012) {
+    var asset = dirasset7;
+  }
+  else {
+    var asset = dirasset;
+  }
+
+
+   var mosaicoTotal = ee.ImageCollection(asset)
+                        .filterMetadata('biome', 'equals', bioma)
+                        .filterMetadata('year', 'equals', ano)
+                        .filterMetadata('version','equals','3')
+                        .mosaic()
+
+     var ll = ee.Image.pixelLonLat().clip(geometry);
+    
+    var long = ll.select('longitude').add(34.8).multiply(-1).multiply(1000).toInt16()
+    var lati = ll.select('latitude').add(5).multiply(-1).multiply(1000).toInt16()
+    
+    mosaicoTotal = mosaicoTotal.addBands(long.rename('longitude'))
+    mosaicoTotal = mosaicoTotal.addBands(lati.rename('latitude' ))
+    mosaicoTotal = mosaicoTotal.addBands(lati.rename('GEDI' ))
+    var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
+    var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
+    mosaicoTotal = mosaicoTotal.addBands(nddi_wet.rename('nddi_wet' ))
+    mosaicoTotal = mosaicoTotal.addBands(nddi_dry.rename('nddi_dry' ))
+    
+    var BDamostras = ee.FeatureCollection(dirsamples+'pontos_train_'+regiao+'_'+versao_samples+'_'+ano).filterBounds(limite)
+
+
+    var BDflo = BDamostras.filterMetadata("reference", "equals", 3);
+    var BDsav = BDamostras.filterMetadata("reference", "equals", 4)
+    var BDcam = BDamostras.filterMetadata("reference", "equals", 12)
+    var BDagr = BDamostras.filterMetadata("reference", "equals", 21)
+    var BDagu = BDamostras.filterMetadata("reference", "equals", 33)
+    
+    BDflo = shuffle(BDflo, 2).limit(amostras_flor)  
+    BDsav = shuffle(BDsav, 2).limit(amostras_sava) 
+    BDcam = shuffle(BDcam, 2).limit(amostras_camp)
+    BDagr = shuffle(BDagr, 2).limit(amostras_agro) 
+    BDagu = shuffle(BDagu, 2).limit(amostras_agua)
+
+  var training = BDflo.merge(BDsav).merge(BDcam).merge(BDagu).merge(BDagr)
+
+  var classifier = ee.Classifier.smileRandomForest({numberOfTrees: RFtrees, variablesPerSplit:1})
+  
+  classifier = classifier.train(training, 'reference', bandNames);
+
+  var classified = mosaicoTotal.classify(classifier).mask(mosaicoTotal.select('blue_median'));
+  classified = classified.select(['classification'],['classification_'+ano]).clip(limite).toInt16() 
+
+  if (i_ano == 0){ var classified85a20 = classified}  
+  else {classified85a20 = classified85a20.addBands(classified); }
+  
+}
+
+classified85a20 = classified85a20
+.set('collection', '6')
+.set('biome', bioma)
+
+  Export.image.toAsset({
+    "image": classified85a20,
+    "description": 'PANT_col6_'+versao_out,
+    "assetId": dirout + 'PANT_col6_prob_'+versao_out,
+    "scale": 30,
+    "pyramidingPolicy": {
+        '.default': 'mode'
+    },
+    "maxPixels": 1e13,
+    "region": limite
+  });    
+
+
+
