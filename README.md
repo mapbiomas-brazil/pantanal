@@ -1,6 +1,6 @@
 <<div class="fluid-row" id="header">
     <img src='./misc/arcplan-logo.jpeg' height='70' width='auto' align='right'>
-    <h1 class="title toc-ignore">Atlantic Forest</h1>
+    <h1 class="title toc-ignore">Pantanal</h1>
     <h4 class="author"><em>Developed by  ArcPlan - mrosa@arcplan.com.br</em></h4>
 </div>
 
