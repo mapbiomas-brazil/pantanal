@@ -8,7 +8,7 @@
 This folder contains the scripts to classify and post-process the Pantanal Biome.
 
 We recommend that you read the Pantanal Biome Appendix of the Algorithm Theoretical Basis Document (ATBD).
-[Link to ATBD](https://LINKLINK)
+[Link to ATBD](https://mapbiomas-br-site.s3.amazonaws.com/Metodologia/Pantanal_Appendix_-_ATBD_Col7_v7_v1.pdf)
 
 # How to use
 First, you need to copy these scripts (including those in p04 folder) to your Google Earth Engine (GEE) account.
