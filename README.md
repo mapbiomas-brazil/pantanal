@@ -51,7 +51,7 @@ Step04: fill the pixels without Landsat image with the soon driest month pixel
 
 Step05: creates and exports annual frequency data based on monthly data
 
-# Post-classification
+# 03 Post-classification
 
 Step01: apply temporal and trajectory filters
 
