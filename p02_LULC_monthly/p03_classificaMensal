@@ -1,0 +1,405 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var imageVisParam = {"opacity":1,"bands":["swir1","nir","red"],"min":0.02283194999999999,"max":0.36600554999999996,"gamma":0.85},
+    geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-58.52936205752952, -16.48069309590335],
+          [-58.57330737002952, -17.101247170160555],
+          [-58.32062182315452, -17.478882098612424],
+          [-57.96905932315452, -17.656938725904308],
+          [-57.77130541690452, -17.897558502926692],
+          [-57.67242846377952, -18.273525077010646],
+          [-57.94708666690452, -19.23060191352147],
+          [-58.24371752627952, -19.71741814896459],
+          [-58.29864916690452, -20.274912605306977],
+          [-57.99103197940452, -20.96383809400686],
+          [-58.07892260440452, -21.578107423128746],
+          [-58.10089526065452, -22.230467998199895],
+          [-57.41974291690452, -22.26097380469566],
+          [-57.32086596377952, -21.88427321684344],
+          [-57.11212572940452, -21.49635339908078],
+          [-56.98028979190452, -21.056141489602602],
+          [-56.82648119815452, -20.45000902167834],
+          [-56.38702807315452, -20.48088774020802],
+          [-55.89264330752952, -20.50147010055191],
+          [-55.65094408877952, -20.50147010055191],
+          [-55.10162768252952, -19.44829624235093],
+          [-54.68414721377952, -18.482045076276716],
+          [-54.68414721377952, -17.792981029318906],
+          [-54.80499682315452, -17.048736849002278],
+          [-54.82696947940452, -16.522828344097242],
+          [-55.06866869815452, -16.217140881812828],
+          [-55.50812182315452, -15.847575770994556],
+          [-56.00250658877952, -15.604348700492018],
+          [-56.71661791690452, -15.93210807445483],
+          [-57.29889330752952, -15.805296326997492],
+          [-57.95807299502952, -15.535558114006925],
+          [-58.973632404627836, -15.897400514355134],
+          [-59.290155580858844, -16.315729569211467]]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// EXECUTES THE MONTHLY WATER AND WETLAND CLASSIFICATION USING RANDOM FOREST CLASSIFIER AND NDDI INDEX
+
+// set output file
+var versao_out = '1';
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/mensal/';
+
+// define trees number
+var RFtrees = 50;
+
+// mosaics settings to be classified
+var landsat_5col2 = ee.ImageCollection('LANDSAT/LT05/C02/T1_L2');
+var landsat_7col2 = ee.ImageCollection('LANDSAT/LE07/C02/T1_L2');
+var landsat_8col2 = ee.ImageCollection('LANDSAT/LC08/C02/T1_L2');
+var landsat_9col2 = ee.ImageCollection('LANDSAT/LC09/C02/T1_L2');
+
+var L5_oldBands = ["SR_B1",  "SR_B2",   "SR_B3", "SR_B4", "SR_B5",   "SR_B7",    "QA_PIXEL"];
+var L5_newBands = ["blue",   "green",   "red",   "nir",   "swir1",   "swir2",    "QA_PIXEL"];
+var L7_oldBands = ["SR_B1",  "SR_B2",   "SR_B3", "SR_B4", "SR_B5",   "SR_B7",    "QA_PIXEL"];
+var L7_newBands = ["blue",   "green",   "red",   "nir",   "swir1",   "swir2",    "QA_PIXEL"];
+var L8_oldBands = ["SR_B1",  "SR_B2",  "SR_B3",   "SR_B4", "SR_B5", "SR_B6",   "SR_B7",   "QA_PIXEL"];
+var L8_newBands = ["uv",     "blue",   "green",   "red",   "nir",    "swir1",  "swir2",   "QA_PIXEL"];
+var L9_oldBands = ["SR_B1",  "SR_B2",  "SR_B3",   "SR_B4", "SR_B5", "SR_B6",   "SR_B7",   "QA_PIXEL"];
+var L9_newBands = ["uv",     "blue",   "green",   "red",   "nir",    "swir1",  "swir2",   "QA_PIXEL"];
+
+var L57_nuvem = function (image) {
+        // mascara de nuvem
+        var qaMask = image.select('QA_PIXEL').bitwiseAnd(parseInt('11111', 2)).eq(0);
+        var saturationMask = image.select('QA_RADSAT').eq(0);
+        return image.updateMask(qaMask)
+                    .updateMask(saturationMask);
+      };
+var L89_nuvem = function (image) {
+     var qaMask = image.select('QA_PIXEL').bitwiseAnd(parseInt('11111', 2)).eq(0);
+     var saturationMask = image.select('QA_RADSAT').eq(0);
+          return image.updateMask(qaMask)
+                      .updateMask(saturationMask);
+      };
+var L9_nuvem = function (image) {
+     var qaMask = image.select('QA_PIXEL').bitwiseAnd(parseInt('11111', 2)).eq(0);
+     var saturationMask = image.select('QA_RADSAT').eq(0);
+          return image.updateMask(qaMask)
+                      .updateMask(saturationMask);
+      };
+function applyScaleFactorsL5(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.select('SR_B.').multiply(10000).int16();
+  return image.addBands(opticalBands, null, true)
+  .select(L5_oldBands,L5_newBands);
+}
+function applyScaleFactorsL7(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.select('SR_B.').multiply(10000).int16();
+  return image.addBands(opticalBands, null, true)
+  .select(L7_oldBands,L7_newBands);
+}
+function applyScaleFactorsL8(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.select('SR_B.').multiply(10000).int16();
+  return image.addBands(opticalBands, null, true)
+  .select(L8_oldBands,L8_newBands);
+}
+function applyScaleFactorsL9(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.select('SR_B.').multiply(10000).int16();
+  return image.addBands(opticalBands, null, true)
+  .select(L9_oldBands,L9_newBands);
+}
+function removeStripes(image){                          
+var mask = image.select('blue');
+return image.updateMask(image.select('blue').gt(0));
+}
+function adicionaindices(image) {
+var ndvi = '(b("nir") - b("red") ) / ( b("nir") + b("red") )';
+var ndwi = '(b("nir") - b("swir1"))/ ( b("nir") + b("swir1"))';
+var nddi = '((((b("nir") - b("red") ) / ( b("nir") + b("red") )) - ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))) / (((b("nir") - b("red") ) / ( b("nir") + b("red") )) + ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))))';
+var indNDVI = image.expression(ndvi).rename("NDVI").add(1).multiply(1000).int16();
+var indNDWI = image.expression(ndwi).rename("NDWI").add(1).multiply(1000).int16();
+var indNDDI = image.expression(nddi).rename("NDDI").add(1).multiply(1000).int16();
+  return image.addBands(indNDVI).addBands(indNDWI).addBands(indNDDI);
+}
+var shuffle = function (collection, seed) {
+    collection = collection.randomColumn('random', seed || 1)
+        .sort('random', true)
+        .map(function (feature) {
+                var rescaled = ee.Number(feature.get('random')).multiply(1000000000).round();
+                return feature.set('new_id', rescaled)});
+    var randomIdList = ee.List(collection.reduceColumns(ee.Reducer.toList(), ['new_id']).get('list'));
+    var sequentialIdList = ee.List.sequence(1, collection.size());
+    var shuffled = collection.remap(randomIdList, sequentialIdList, 'new_id');
+    return shuffled;
+};
+
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {'min': 0,'max': 62,'palette': palettes.get('classification7')};
+var visImg = {gain: [0.08, 0.06, 0.2], gamma: 0.85, bands:['swir1','nir','red']};
+
+var bandNames = ['NDDI','NDVI','NDWI','blue','green','nir','red','swir1','swir2'];
+
+// organize the list of trained months and years 
+var lista_ano = [
+//     ['l5','1985'],['l5','1986'],['l5','1987'],['l5','1988'],['l5','1989'],
+//     ['l5','1990'],['l5','1991'],['l5','1992'],['l5','1993'],['l5','1994'],
+//     ['l5','1995'],['l5','1996'],['l5','1997'],['l5','1998'],['l5','1999'],
+//     ['l57','2000'],['l57','2001'],['l57','2002'],
+//     ['l5','2003'],
+//     ['l75','2004'],['l75','2005'],['l75','2006'],['l75','2007'],
+//     ['l75','2008'],['l75','2009'],['l75','2010'],['l75','2011'],
+//     ['l7','2012'],
+//     ['l8','2013'],['l8','2014'],['l8','2015'],['l8','2016'],['l8','2017'],
+//     ['l8','2018'],['l8','2019'],['l8','2020'],['l8','2021'],
+     ['l89','2022'],
+                ];
+
+for (var i_grupo=0;i_grupo<lista_ano.length; i_grupo++){
+
+  var valor_lista = lista_ano[i_grupo];
+  
+  var sat = valor_lista[0];
+  var ano = valor_lista[1];
+  
+  if (ano == '1994') {
+    var lista_mes = [1,2,4,5,6,7,8,9,10,11,12];
+  } else if (ano == '1995') {
+    var lista_mes = [1,3,4,5,6,7,8,9,10,11,12];
+  } else if (ano == '1997') {
+    var lista_mes = [1,2,3,4,5,6,7,8,9,10,11];
+  } else if (ano == '2003') {
+    var lista_mes = [1,2,3,4,5,7,8,9,10,11,12];
+  } else if (ano == '2013') {
+    var lista_mes = [1,2,3,4,5,6,7,8,9,10,11,12];
+  } else if (ano == '2011') {
+    var lista_mes = [1,2,3,4,5,6,7,8,9,10,11];
+  } else {
+    var lista_mes = [1,2,3,4,5,6,7,8,9,10,11,12];
+  }
+  
+  for (var i_grupo2=0;i_grupo2<lista_mes.length; i_grupo2++){
+    
+    var mes = lista_mes[i_grupo2];
+    if (ano == '2013') {
+      if (mes == 1) {
+        var sat = 'l7';
+      } else if (mes == 2) {
+        var sat = 'l7';
+      } else {
+        var sat = 'l8';
+      }
+    }
+     else if (ano == '2003') {
+        if (mes == 1) {
+          var sat = 'l7';
+        } else if (mes == 2) {
+          var sat = 'l7';
+        } else if (mes == 3) {
+          var sat = 'l7';
+        } else if (mes == 4) {
+          var sat = 'l7';
+        } else if (mes == 5) {
+          var sat = 'l7';
+        } else {
+          var sat = 'l5';
+        }
+     }
+     else if (ano == '2002') {
+      if (mes < 5) {
+        var sat = 'l57';
+      } else  {
+        var sat = 'l7';
+      } 
+    }
+   else if (ano == '2007') {
+      if (mes == 11) {
+        var sat = 'l7';
+      } else if (mes == 12) {
+        var sat = 'l7';
+      } else {
+        var sat = 'l75';
+      }
+   } 
+ else if (ano == '2005') {
+      if (mes == 12) {
+        var sat = 'l7';
+      }  else {
+        var sat = 'l75';
+      }
+   } 
+ else if (ano == '2008') {
+      if (mes == 6) {
+        var sat = 'l7';
+      }  else {
+        var sat = 'l75';
+      }
+   }
+    var data_ini = ee.Date.fromYMD(parseInt(ano),parseInt(mes),01);
+    var data_fim = data_ini.advance(1,'month');
+
+var pontos_treinados = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col7/PANTANAL/SAMPLES/UMIDO_MENSAL/pontos_treinados_v5_pantanal_mensal');
+var pt_agua = pontos_treinados.filterMetadata('reference','equals',33);
+var pt_umid = pontos_treinados.filterMetadata('reference','equals',11);
+
+var pontos_estaveis = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col7/PANTANAL/SAMPLES/UMIDO_MENSAL/pontos_estaveis_v6_pantanal_mensal');
+var pt_flor = pontos_estaveis.filterMetadata('reference','equals',3);
+var pt_sava = pontos_estaveis.filterMetadata('reference','equals',4);
+var pt_camp = pontos_estaveis.filterMetadata('reference','equals',12);
+var pt_past = pontos_estaveis.filterMetadata('reference','equals',21);
+
+pt_agua = shuffle(pt_agua).limit(8000);  
+pt_flor = shuffle(pt_flor).limit(300).map(function altera(feat) {return feat.set('reference',21)})
+pt_sava = shuffle(pt_sava).limit(300).map(function altera(feat) {return feat.set('reference',21)})
+pt_camp = shuffle(pt_camp).limit(300).map(function altera(feat) {return feat.set('reference',21)})
+pt_past = shuffle(pt_past).limit(300);
+
+    if (sat ==  'l5') {
+      var mosaico_mensal = landsat_5col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var mosaico_mensal_filtrado = mosaico_mensal.map(L57_nuvem).map(applyScaleFactorsL5).map(adicionaindices).map(removeStripes).median();
+      var pt_umid_not8 = pt_umid.filterMetadata('sat','not_equals','landsat_8_col2').limit(7000);
+      var pt_umid_with8 = pt_umid.filterMetadata('sat','equals','landsat_8_col2').limit(100);
+      pt_umid = pt_umid_not8.merge(pt_umid_with8);
+      pt_umid = shuffle(pt_umid).limit(4000);
+      // defines the separation threshold between water and wetland for each satellite 
+      var limiar_agua = 1100;
+      var amostras_train = pt_agua;
+      var amostrasEst_train = pt_flor.merge(pt_sava).merge(pt_camp).merge(pt_past).merge(pt_umid);
+      var amostrasFiltradas = amostras_train.filterMetadata('sat','not_equals','landsat_8_col2').merge(amostrasEst_train);
+      var amostras_11_33 = amostras_train.filterMetadata('sat','not_equals','landsat_8_col2').merge(pt_umid);
+    }
+    else if (sat ==  'l57') {
+      var mosaico_mensal = landsat_5col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var mosaico_mensal_filtrado1 = mosaico_mensal.map(L57_nuvem).map(applyScaleFactorsL5).map(adicionaindices).map(removeStripes).median();
+      var merge = landsat_7col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var merge1 = merge.map(L57_nuvem).map(applyScaleFactorsL7).map(adicionaindices).map(removeStripes).median();
+      var mosaico_mensal_filtrado = mosaico_mensal_filtrado1.blend(merge1);
+      var pt_umid_not8 = pt_umid.filterMetadata('sat','not_equals','landsat_8_col2').limit(7000);
+      var pt_umid_with8 = pt_umid.filterMetadata('sat','equals','landsat_8_col2').limit(100);
+      pt_umid = pt_umid_not8.merge(pt_umid_with8);
+      pt_umid = shuffle(pt_umid).limit(4000);  
+      var limiar_agua = 1100;
+      var amostras_train = pt_agua;
+      var amostrasEst_train = pt_flor.merge(pt_sava).merge(pt_camp).merge(pt_past).merge(pt_umid);
+      var amostrasFiltradas = amostras_train.filterMetadata('sat','not_equals','landsat_8_col2').merge(amostrasEst_train);
+      var amostras_11_33 = amostras_train.filterMetadata('sat','not_equals','landsat_8_col2').merge(pt_umid);
+    }
+    else if (sat ==  'l75') {
+      var mosaico_mensal = landsat_5col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var mosaico_mensal_filtrado1 = mosaico_mensal.map(L57_nuvem).map(applyScaleFactorsL5).map(adicionaindices).map(removeStripes).median();
+      var merge = landsat_7col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var merge1 = merge.map(L57_nuvem).map(applyScaleFactorsL7).map(adicionaindices).map(removeStripes).median();
+      var mosaico_mensal_filtrado = merge1.blend(mosaico_mensal_filtrado1);
+      var pt_umid_not8 = pt_umid.filterMetadata('sat','not_equals','landsat_8_col2').limit(7000);
+      var pt_umid_with8 = pt_umid.filterMetadata('sat','equals','landsat_8_col2').limit(100);
+      pt_umid = pt_umid_not8.merge(pt_umid_with8);
+      pt_umid = shuffle(pt_umid).limit(4000); 
+      var limiar_agua = 1100;
+      var amostras_train = pt_agua;
+      var amostrasEst_train = pt_flor.merge(pt_sava).merge(pt_camp).merge(pt_past).merge(pt_umid);
+      var amostrasFiltradas = amostras_train.filterMetadata('sat','not_equals','landsat_8_col2').merge(amostrasEst_train);
+      var amostras_11_33 = amostras_train.filterMetadata('sat','not_equals','landsat_8_col2').merge(pt_umid);
+   }
+   else if (sat ==  'l7') {
+      var mosaico_mensal = landsat_7col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var mosaico_mensal_filtrado = mosaico_mensal.map(L57_nuvem).map(applyScaleFactorsL7).map(adicionaindices).map(removeStripes).median();
+      var pt_umid_not8 = pt_umid.filterMetadata('sat','not_equals','landsat_8_col2').limit(7000);
+      var pt_umid_with8 = pt_umid.filterMetadata('sat','equals','landsat_8_col2').limit(100);
+      pt_umid = pt_umid_not8.merge(pt_umid_with8);
+      pt_umid = shuffle(pt_umid).limit(4000);
+      var limiar_agua = 1120;
+      var amostras_train = pt_agua;
+      var amostrasEst_train = pt_flor.merge(pt_sava).merge(pt_camp).merge(pt_past).merge(pt_umid);
+      var amostrasFiltradas = amostras_train.filterMetadata('sat','not_equals','landsat_8_col2').merge(amostrasEst_train);
+      var amostras_11_33 = amostras_train.filterMetadata('sat','not_equals','landsat_8_col2').merge(pt_umid);
+    }
+    else if (sat ==  'l8') {
+      var mosaico_mensal = landsat_8col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var mosaico_mensal_filtrado = mosaico_mensal.map(L89_nuvem).map(applyScaleFactorsL8).map(adicionaindices).median();
+      var pt_umid_not8 = pt_umid.filterMetadata('sat','not_equals','landsat_8_col2').limit(5000);
+      var pt_umid_with8 = pt_umid.filterMetadata('sat','equals','landsat_8_col2').limit(1000);
+      pt_umid = pt_umid_not8.merge(pt_umid_with8);
+      pt_umid = shuffle(pt_umid).limit(2000);
+      var limiar_agua = 1220;
+      var amostras_train = pt_agua;
+      var amostrasEst_train = pt_flor.merge(pt_sava).merge(pt_camp).merge(pt_past).merge(pt_umid);
+      var amostrasFiltradas = amostras_train.filterMetadata('sat','equals','landsat_8_col2').merge(amostrasEst_train);
+      var amostras_11_33 = amostras_train.filterMetadata('sat','equals','landsat_8_col2').merge(pt_umid);
+    }
+    else if (sat ==  'l9') {
+      var mosaico_mensal = landsat_9col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var mosaico_mensal_filtrado = mosaico_mensal.map(L9_nuvem).map(applyScaleFactorsL9).map(adicionaindices).median();
+      var pt_umid_not8 = pt_umid.filterMetadata('sat','not_equals','landsat_8_col2').limit(5000);
+      var pt_umid_with8 = pt_umid.filterMetadata('sat','equals','landsat_8_col2').limit(1000);
+      pt_umid = pt_umid_not8.merge(pt_umid_with8);
+      pt_umid = shuffle(pt_umid).limit(2000);
+      var limiar_agua = 1220;
+      var amostras_train = pt_agua;
+      var amostrasEst_train = pt_flor.merge(pt_sava).merge(pt_camp).merge(pt_past).merge(pt_umid);
+      var amostrasFiltradas = amostras_train.filterMetadata('sat','equals','landsat_8_col2').merge(amostrasEst_train);
+      var amostras_11_33 = amostras_train.filterMetadata('sat','equals','landsat_8_col2').merge(pt_umid);
+    }
+    else if (sat ==  'l89') {
+      var mosaico_mensal = landsat_8col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var mosaico_mensal_filtrado1 = mosaico_mensal.map(L89_nuvem).map(applyScaleFactorsL8).map(adicionaindices).median();
+      var merge = landsat_9col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+      var merge1 = merge.map(L89_nuvem).map(applyScaleFactorsL9).map(adicionaindices).map(removeStripes).median();
+      var mosaico_mensal_filtrado = merge1.blend(mosaico_mensal_filtrado1);
+      var pt_umid_not8 = pt_umid.filterMetadata('sat','not_equals','landsat_8_col2').limit(5000);
+      var pt_umid_with8 = pt_umid.filterMetadata('sat','equals','landsat_8_col2').limit(1000);
+      pt_umid = pt_umid_not8.merge(pt_umid_with8);
+      pt_umid = shuffle(pt_umid).limit(2000);
+      var limiar_agua = 1220;
+      var amostras_train = pt_agua;
+      var amostrasEst_train = pt_flor.merge(pt_sava).merge(pt_camp).merge(pt_past).merge(pt_umid);
+      var amostrasFiltradas = amostras_train.filterMetadata('sat','equals','landsat_8_col2').merge(amostrasEst_train);
+      var amostras_11_33 = amostras_train.filterMetadata('sat','equals','landsat_8_col2').merge(pt_umid);
+    }
+
+// classifier settings
+     var classifier = ee.Classifier.smileRandomForest({numberOfTrees: RFtrees, variablesPerSplit:1}).train(amostrasFiltradas, 'reference', bandNames);
+  // print(classifier.explain())
+    var classified1 = mosaico_mensal_filtrado.classify(classifier);
+    classified1 = classified1.select(['classification']).toInt8();
+  var posClass =  mosaico_mensal_filtrado.addBands(classified1);
+  var bandNames2 = ['NDDI','NDVI','NDWI','blue','green','nir','red','swir1','swir2','classification'];    
+    Map.addLayer(posClass, visImg, 'Landsat_'+ano+"_"+mes, false);
+  Map.addLayer(classified1, vis, 'RF_'+ano+"_"+mes, false);
+
+  var mosaicoCortado =  mosaico_mensal_filtrado.updateMask(posClass.select('classification').neq(21));  //umid areas by RF
+  Map.addLayer(mosaicoCortado, visImg, 'mosaicoCortado'+ano+"_"+mes, false);
+
+var classifier2 = ee.Classifier.smileRandomForest({numberOfTrees: RFtrees, variablesPerSplit:1}).train(amostras_11_33, 'reference', bandNames);
+var classified2 = mosaicoCortado.classify(classifier2);
+classified2 = classified2.select(['classification'],['classification_'+ano+'_'+mes]).toInt8();
+//Map.addLayer(classified2, vis, 'RF_2_'+ano+"_"+mes, false)
+
+
+//////////applies the threshold only in the area classified as 11 and 33 by the RFF/////////
+var nddi_wet = mosaicoCortado.select(['NDDI']);
+var agua = nddi_wet.lt(limiar_agua).selfMask();
+//Map.addLayer(agua, {'palette': 'blue'}, 'agua'+ano+'-'+mes, false);
+var classified = agua.remap([1],[33]).rename('classification_'+ano+'_'+mes);
+classified = classified2.blend(classified).toInt8();
+
+Map.addLayer(classified, vis, 'Final_class_'+ano+"_"+mes, false);
+
+    if (i_grupo2 === 0){ var classified_ano = classified }  
+    else {classified_ano = classified_ano.addBands(classified);
+    }
+    
+  }
+  
+  // export images for each year
+  Export.image.toAsset({
+  "image": classified_ano.toInt8(),
+  "description": 'class_mensal_'+'RF_'+ano+'_v'+versao_out,
+  "assetId": dirout + 'class_mensal_'+'RF_'+ano+'_v'+versao_out,
+  "scale": 30,
+  "pyramidingPolicy": {
+      '.default': 'mode'
+  },
+  "maxPixels": 1e13,
+  "region": geometry
+});    
+
+}
+
+//Marcos Rosa, Eduardo Rosa, Mariana Dias
+//Updated Jul 17, 2023 - MD - mariana@arcplan.com.br

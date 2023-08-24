@@ -1,0 +1,324 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-59.4487858910974, -22.06465092112939],
+          [-57.6690007348474, -23.381977147509676],
+          [-53.8237858910974, -19.807417455737117],
+          [-53.9775944848474, -15.558892510475433],
+          [-56.7681218285974, -14.646713665814655],
+          [-60.0420476098474, -16.319490009122323]]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// MONTHLY SAMPLES TRAINING
+
+// set output file
+var versao_out = '1';
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/mensal/';
+
+// set mosaics assets to be trained
+var landsat_5col2 = ee.ImageCollection('LANDSAT/LT05/C02/T1_L2');
+var landsat_7col2 = ee.ImageCollection('LANDSAT/LE07/C02/T1_L2');
+var landsat_8col2 = ee.ImageCollection('LANDSAT/LC08/C02/T1_L2');
+var landsat_9col2 = ee.ImageCollection('LANDSAT/LC09/C02/T1_L2');
+
+var L5_oldBands = ["SR_B1",  "SR_B2",   "SR_B3", "SR_B4", "SR_B5",   "SR_B7",    "QA_PIXEL"];
+var L5_newBands = ["blue",   "green",   "red",   "nir",   "swir1",   "swir2",    "QA_PIXEL"];
+var L7_oldBands = ["SR_B1",  "SR_B2",   "SR_B3", "SR_B4", "SR_B5",   "SR_B7",    "QA_PIXEL"];
+var L7_newBands = ["blue",   "green",   "red",   "nir",   "swir1",   "swir2",    "QA_PIXEL"];
+var L8_oldBands = ["SR_B1",  "SR_B2",  "SR_B3",   "SR_B4", "SR_B5", "SR_B6",   "SR_B7",   "QA_PIXEL"];
+var L8_newBands = ["uv",     "blue",   "green",   "red",   "nir",    "swir1",  "swir2",   "QA_PIXEL"];
+var L9_oldBands = ["SR_B1",  "SR_B2",  "SR_B3",   "SR_B4", "SR_B5", "SR_B6",   "SR_B7",   "QA_PIXEL"];
+var L9_newBands = ["uv",     "blue",   "green",   "red",   "nir",    "swir1",  "swir2",   "QA_PIXEL"];
+
+var L5_nuvem = function (image) {
+        // mascara de nuvem
+        var cloudShadowBitMask = (1 << 3);
+        var cloudsBitMask = (1 << 5);
+        var qa = image.select('QA_PIXEL');
+        var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0).and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+              function bitwiseExtract(value, fromBit, toBit) {
+                if (toBit === undefined)
+                  toBit = fromBit;
+                var maskSize = ee.Number(1).add(toBit).subtract(fromBit);
+                var mask = ee.Number(1).leftShift(maskSize).subtract(1);
+                return value.rightShift(fromBit).bitwiseAnd(mask);
+              }
+              var clear = bitwiseExtract(qa, 6); // 1 if clear
+              var radsatQA = image.select('QA_RADSAT');
+              var band5Saturated = bitwiseExtract(radsatQA, 4); // 0 if band 5 is not saturated
+              var mask_saturation = clear;
+        return image.updateMask(mask);
+      };
+
+var L7_nuvem = function (image) {
+        var cloudShadowBitMask = (1 << 3);
+        var cloudsBitMask = (1 << 5);
+        var qa = image.select('QA_PIXEL');
+        var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+            .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+              function bitwiseExtract(value, fromBit, toBit) {
+                if (toBit === undefined)
+                  toBit = fromBit;
+                var maskSize = ee.Number(1).add(toBit).subtract(fromBit);
+                var mask = ee.Number(1).leftShift(maskSize).subtract(1);
+                return value.rightShift(fromBit).bitwiseAnd(mask);
+              }
+            var clear = bitwiseExtract(qa, 6); // 1 if clear
+              var radsatQA = image.select('QA_RADSAT');
+              var band5Saturated = bitwiseExtract(radsatQA, 4); // 0 if band 5 is not saturated
+              var anySaturated = bitwiseExtract(radsatQA, 0, 6); // 0 if no bands are saturated
+              var mask_saturation = clear;
+            
+        return image.updateMask(mask);
+       };
+
+var L8_nuvem = function (image) {
+            var qa = image.select('QA_PIXEL');
+                var cloud = qa.bitwiseAnd(1 << 3)
+                .and(qa.bitwiseAnd(1 << 9))
+                .or(qa.bitwiseAnd(1 << 4));
+            // If the clear bit (6) is set 
+            // or water bit is set (7), then it's a good pixel 
+            var good_pixel  = qa.bitwiseAnd(1 << 6)
+                .or(qa.bitwiseAnd(1 << 7));
+          // read radsat 
+          var radsatQA = image.select('QA_RADSAT');
+          // Is any band saturated? 
+          var saturated = radsatQA.bitwiseAnd(1 << 0)
+            .or(radsatQA.bitwiseAnd(1 << 1))
+              .or(radsatQA.bitwiseAnd(1 << 2))
+                .or(radsatQA.bitwiseAnd(1 << 3))
+                  .or(radsatQA.bitwiseAnd(1 << 4))
+                    .or(radsatQA.bitwiseAnd(1 << 5))
+                      .or(radsatQA.bitwiseAnd(1 << 6));
+          return image.updateMask(cloud.not()).updateMask(good_pixel).updateMask(saturated.not());
+      };
+
+var L9_nuvem = function (image) {
+            var qa = image.select('QA_PIXEL');
+                var cloud = qa.bitwiseAnd(1 << 3)
+                .and(qa.bitwiseAnd(1 << 9))
+                .or(qa.bitwiseAnd(1 << 4));
+            // If the clear bit (6) is set 
+            // or water bit is set (7), then it's a good pixel 
+            var good_pixel  = qa.bitwiseAnd(1 << 6)
+                .or(qa.bitwiseAnd(1 << 7));
+          // read radsat 
+          var radsatQA = image.select('QA_RADSAT');
+          // Is any band saturated? 
+          var saturated = radsatQA.bitwiseAnd(1 << 0)
+            .or(radsatQA.bitwiseAnd(1 << 1))
+              .or(radsatQA.bitwiseAnd(1 << 2))
+                .or(radsatQA.bitwiseAnd(1 << 3))
+                  .or(radsatQA.bitwiseAnd(1 << 4))
+                    .or(radsatQA.bitwiseAnd(1 << 5))
+                      .or(radsatQA.bitwiseAnd(1 << 6));
+          return image.updateMask(cloud.not()).updateMask(good_pixel).updateMask(saturated.not());
+      };
+
+function applyScaleFactorsL5(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.select('SR_B.').multiply(10000).int16();
+  return image.addBands(opticalBands, null, true)
+  .select(L5_oldBands,L5_newBands);
+}
+function applyScaleFactorsL7(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.select('SR_B.').multiply(10000).int16();
+  return image.addBands(opticalBands, null, true)
+  .select(L7_oldBands,L7_newBands);
+}
+function applyScaleFactorsL8(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.select('SR_B.').multiply(10000).int16();
+  return image.addBands(opticalBands, null, true)
+  .select(L8_oldBands,L8_newBands);
+}
+function applyScaleFactorsL9(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  opticalBands = opticalBands.select('SR_B.').multiply(10000).int16();
+  return image.addBands(opticalBands, null, true)
+  .select(L9_oldBands,L9_newBands);
+}
+
+function adicionaindices(image) {
+var ndvi = '(b("nir") - b("red") ) / ( b("nir") + b("red") )';
+var ndwi = '(b("nir") - b("swir1"))/ ( b("nir") + b("swir1"))';
+var nddi = '((((b("nir") - b("red") ) / ( b("nir") + b("red") )) - ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))) / (((b("nir") - b("red") ) / ( b("nir") + b("red") )) + ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))))';
+
+var indNDVI = image.expression(ndvi).rename("NDVI").add(1).multiply(1000).int16();
+var indNDWI = image.expression(ndwi).rename("NDWI").add(1).multiply(1000).int16();
+var indNDDI = image.expression(nddi).rename("NDDI").add(1).multiply(1000).int16();
+
+  return image.addBands(indNDVI).addBands(indNDWI).addBands(indNDDI);
+}
+
+var visualization = {bands: ['red', 'green', 'blue'],min: 0.0,max: 0.3,};
+var visParams = {gain: [0.08, 0.06, 0.2], gamma: 0.85,bands:['swir1','nir','red']};
+
+// organize the list of sampled months and years 
+var lista_mes = [
+                 ['l5','1985','01'],
+                 ['l5','1985','02'],
+                 ['l5','1985','06'],
+                 ['l5','1985','12'],
+                 ['l5','1986','09'],
+                 ['l5','1988','04'],
+                 ['l5','1990','05'],
+                 ['l5','1994','07'],
+                 ['l5','1995','01'],
+                 ['l5','1995','05'],
+                 ['l5','1995','09'],
+                 ['l7','2001','08'],
+                 ['l7','2002','03'],
+                 ['l5','2007','03'],
+                 ['l5','2009','09'],
+                 ['l5','2011','04'],
+                 ['l8','2013','04'],
+                 ['l8','2013','08'],
+                 ['l8','2015','03'],
+                 ['l8','2017','03'],
+                 ['l8','2017','09'],
+                 ['l8','2018','02'],
+                 ['l8','2018','07'],
+                 ['l8','2020','03'],
+                 ['l8','2020','09'],
+                 ['l8','2021','02'],
+                 ['l8','2021','08'],
+                 ['l8','2022','06'],
+                 ['l9','2022','06'],
+                 ['l9','2022','11'],
+                ];
+
+// raffle, training and export of monthly water and wetland samples
+for (var i_grupo=0;i_grupo<lista_mes.length; i_grupo++){
+
+  var valor_lista = lista_mes[i_grupo];
+  
+  var sat = valor_lista[0];
+  var ano = valor_lista[1];
+  var mes = valor_lista[2];
+
+  var data_ini = ee.Date.fromYMD(parseInt(ano),parseInt(mes),01);
+  var data_fim = data_ini.advance(1,'month');
+  
+  var amostras = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/mensal/train_water_wetland_pantanal_r1_'+sat+'_v1_'+ano+'_'+mes);
+
+  if (sat ==  'l5') {
+    var mosaico_mensal = landsat_5col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+    var mosaico_mensal_filtrado = mosaico_mensal.map(L5_nuvem).map(applyScaleFactorsL5).map(adicionaindices);
+  } else if (sat ==  'l7') {
+    var mosaico_mensal = landsat_7col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+    var mosaico_mensal_filtrado = mosaico_mensal.map(L7_nuvem).map(applyScaleFactorsL7).map(adicionaindices);
+  }else if (sat ==  'l8') {
+    var mosaico_mensal = landsat_8col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+    var mosaico_mensal_filtrado = mosaico_mensal.map(L8_nuvem).map(applyScaleFactorsL8).map(adicionaindices);
+  }
+  else if (sat ==  'l9') {
+    var mosaico_mensal = landsat_9col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+    var mosaico_mensal_filtrado = mosaico_mensal.map(L9_nuvem).map(applyScaleFactorsL9).map(adicionaindices);
+  }
+  var amostraTotalimg = amostras.reduceToImage({properties: ['reference'],reducer: ee.Reducer.first()}).select([0],['reference']);
+  var train_samples = mosaico_mensal_filtrado.median().addBands(amostraTotalimg).sampleRegions({'collection': amostras, 'scale': 30, 'geometries': true});
+
+  Map.addLayer(mosaico_mensal_filtrado.median(),visParams,'mosaico_mensal_filtrado '+ mes+'-'+ ano,false);
+  Map.addLayer(amostras.filterMetadata('reference','equals',33),{'color': 'blue'},'agua amostras '+mes+'-'+ano,false);
+
+  if (i_grupo === 0) { var amostras_finais = train_samples;
+  } else {amostras_finais = amostras_finais.merge(train_samples);
+  }
+}
+  
+print(amostras_finais.size()) ;
+print(amostras_finais.limit(1000));
+Map.addLayer(amostras_finais.filterMetadata('reference','equals',33),{'color': 'blue'},'agua');
+Map.addLayer(amostras_finais.filterMetadata('reference','equals',11),{'color': '36f9c7'},'umid');
+
+//print('agua total', amostras_finais.filterMetadata('reference','equals',33).size())
+//print('umid total', amostras_finais.filterMetadata('reference','equals',11).size())
+//
+//print('agua l5', amostras_finais.filterMetadata('reference','equals',33).filterMetadata('sat','equals','landsat_5_col2').size())
+//print('umid l5', amostras_finais.filterMetadata('reference','equals',11).filterMetadata('sat','equals','landsat_5_col2').size())
+//
+//print('agua l7', amostras_finais.filterMetadata('reference','equals',33).filterMetadata('sat','equals','landsat_7_col2').size())
+//print('umid l7', amostras_finais.filterMetadata('reference','equals',11).filterMetadata('sat','equals','landsat_7_col2').size())
+//
+//print('agua l8', amostras_finais.filterMetadata('reference','equals',33).filterMetadata('sat','equals','landsat_8_col2').size())
+//print('umid l8', amostras_finais.filterMetadata('reference','equals',11).filterMetadata('sat','equals','landsat_8_col2').size())
+//
+//print('agua l9', amostras_finais.filterMetadata('reference','equals',33).filterMetadata('sat','equals','landsat_9_col2').size())
+//print('umid l9', amostras_finais.filterMetadata('reference','equals',11).filterMetadata('sat','equals','landsat_9_col2').size())
+
+Export.table.toAsset(amostras_finais, 'pontos_treinados_v'+versao_out+'_pantanal_mensal', dirout + 'pontos_treinados_v'+versao_out+'_pantanal_mensal');  
+
+
+// raffle, training and export of monthly stable samples of other LULC classes
+var pts_reg1 = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/samples_stable_r1_v1');
+var pontos_estaveis = pts_reg1;
+pontos_estaveis = pontos_estaveis.filterMetadata('reference','not_equals', 33);
+print(pontos_estaveis.size());
+
+var shuffle = function (collection, seed) {
+    collection = collection.randomColumn('random', seed || 1)
+        .sort('random', true)
+        .map(function (feature) {
+                var rescaled = ee.Number(feature.get('random')).multiply(1000000000).round();
+                return feature.set('new_id', rescaled)});
+    var randomIdList = ee.List(collection.reduceColumns(ee.Reducer.toList(), ['new_id']).get('list'));
+    var sequentialIdList = ee.List.sequence(1, collection.size());
+    var shuffled = collection.remap(randomIdList, sequentialIdList, 'new_id');
+    return shuffled;
+};
+
+for (var i_grupo=0;i_grupo<lista_mes.length; i_grupo++){
+
+  var valor_lista = lista_mes[i_grupo];
+  var sat = valor_lista[0];
+  var ano = valor_lista[1];
+  var mes = valor_lista[2];
+
+  var data_ini = ee.Date.fromYMD(parseInt(ano),parseInt(mes),01);
+  var data_fim = data_ini.advance(1,'month');
+  
+  var amostras = shuffle(pontos_estaveis, i_grupo).limit(300);
+
+ if (sat ==  'l5') {
+    var mosaico_mensal = landsat_5col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+    var mosaico_mensal_filtrado = mosaico_mensal.map(L5_nuvem).map(applyScaleFactorsL5).map(adicionaindices);
+  } else if (sat ==  'l7') {
+    var mosaico_mensal = landsat_7col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+    var mosaico_mensal_filtrado = mosaico_mensal.map(L7_nuvem).map(applyScaleFactorsL7).map(adicionaindices);
+  }else if (sat ==  'l8') {
+    var mosaico_mensal = landsat_8col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+    var mosaico_mensal_filtrado = mosaico_mensal.map(L8_nuvem).map(applyScaleFactorsL8).map(adicionaindices);
+  }
+  else if (sat ==  'l9') {
+    var mosaico_mensal = landsat_9col2.filterDate(data_ini,data_fim).filterBounds(geometry);
+    var mosaico_mensal_filtrado = mosaico_mensal.map(L9_nuvem).map(applyScaleFactorsL9).map(adicionaindices);
+  }
+  
+  var amostraTotalimg = amostras.reduceToImage({properties: ['reference'],reducer: ee.Reducer.first()}).select([0],['reference']);
+  var train_samples = mosaico_mensal_filtrado.median().addBands(amostraTotalimg).sampleRegions({'collection': amostras, 'scale': 30, 'geometries': true});
+
+  if (i_grupo === 0) { var amostras_finais = train_samples;
+  } else {amostras_finais = amostras_finais.merge(train_samples);
+  }
+}
+  
+print('n° final samples',amostras_finais.size());
+//print(amostras_finais.limit(1))
+Map.addLayer(amostras_finais.filterMetadata('reference','equals',3),{'color': '027b1a'},'flor');
+Map.addLayer(amostras_finais.filterMetadata('reference','equals',12),{'color': 'bba83c'},'camp');
+Map.addLayer(amostras_finais.filterMetadata('reference','equals',4),{'color': '03ff35'},'sav');
+Map.addLayer(amostras_finais.filterMetadata('reference','equals',21),{'color': 'f4ff78'},'agr');
+
+//print('flor', amostras_finais.filterMetadata('reference','equals',3).size())
+//print('camp', amostras_finais.filterMetadata('reference','equals',12).size())
+//print('sav', amostras_finais.filterMetadata('reference','equals',4).size())
+//print('agr', amostras_finais.filterMetadata('reference','equals',21).size())
+
+Export.table.toAsset(amostras_finais, 'pontos_estaveis_v'+versao_out+'_pantanal_mensal', dirout + 'pontos_estaveis_v'+versao_out+'_pantanal_mensal');  
+
+//Marcos Rosa, Eduardo Rosa, Mariana Dias
+//Updated Jul 14, 2023 - MD - mariana@arcplan.com.br

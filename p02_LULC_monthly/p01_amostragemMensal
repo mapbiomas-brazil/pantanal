@@ -1,0 +1,2642 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var agua = /* color: #0000ff */ee.Geometry.MultiPoint(),
+    campoAlagado = /* color: #45c2a5 */ee.Geometry.MultiPoint();
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// TOOLKIT FOR MONTHY SAMPLING OF FLOODING IN THE PANTANAL 
+// adaptadet from: https://code.earthengine.google.com/5ef2ca1877d0e1145b0d42ebcfe0c206 by @Wallace Silva
+
+// it is necessary to reset and create new geometries for each year and month sampled!
+// it takes approximately 60 seconds to load
+
+// --- --- --- INITIAL INPUTS AND CACHE MEMORY
+var options = {
+  // --- --- preloaded options in the interface
+  region_table:'Regioes',
+  region:'Pantanal_r1',
+  year:1985, // set samples year
+  month:'01', // set samples month
+  month_int:1, // set samples month
+  sample_version: 'v1', // <- VERSION CONTROL OF EXPORTED SAMPLES
+  avaliation_version: 'v1',  
+  folder_toAsset:'projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/mensal/',
+  dimensions:512,
+  openThumbs:false,
+  
+  // --- This toolkit works based on functions that run through lists accessing datasets, 
+  // this session is made for the management of the lists that trigger these functions
+  
+  // - satellite image collections
+  collection_sr: [
+    'landsat_7_col2',
+    'landsat_5_col2',
+    'landsat_8_col2',
+    'landsat_9_col2',
+    'asset_mosaicos_col8'
+  ],
+
+  // - line-transformed vectors -> auxiliar
+  region_vis: [
+    'line','lines','Quadriculas'
+  ],
+  
+  // -> vectors used in region selection  
+  auxiliar: [
+    'Paises','Biomas','Regioes','Estados','Municipios','UC','Landsat_tile','Quadriculas','Estudo de caso'/*,'Tela'*/
+  ],
+
+  // -> exported bands
+  bands_export:[
+   'blue', 'green', 'red','nir','swir1','swir2', 'landcover' 
+    ],
+  
+  // -> blockList_landsat
+
+   blockList_landsat: require('users/geomapeamentoipam/GT_Fogo_MapBiomas:2_Colecao_1.0_2021/module-blockList').blockList(),
+ 
+  // --- Layers que devem ja vir ligadas
+  // - (on layers)
+  'Limite':true,
+  
+  
+  all_years:[
+      1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,
+      2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022
+    ]
+};
+
+var asset_mosaicos_col8_l5 = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2') 
+      .filter(ee.Filter.eq('satellite','l5'))
+      .filter(ee.Filter.inList('year', [
+        1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2003,2004,2005,2006,2007,2008,
+        2009,2010,2011
+        ]));
+
+var asset_mosaicos_col8_l7 = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2') 
+      .filter(ee.Filter.eq('satellite','l7'))
+      .filter(ee.Filter.inList('year', [
+        2000,2001,2002,/*2003,2004,2005,2006,2007,2008,2009,2010,2011,*/2012
+      ]));
+
+var asset_mosaicos_col8_l8 = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2') 
+      .filter(ee.Filter.eq('satellite','l8'))
+      .filter(ee.Filter.inList('year', [
+        2013,2014,2015,2016,2017,2018,2019,2020,2021,2022
+      ]));
+
+var asset_mosaicos_col8_l9 = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2') 
+      .filter(ee.Filter.eq('satellite','l9'))
+      .filter(ee.Filter.inList('year', [
+        2022
+      ]));
+
+
+var asset_mosaicos_col8 = asset_mosaicos_col8_l5
+  .merge(asset_mosaicos_col8_l7)
+  .merge(asset_mosaicos_col8_l8)
+  .merge(asset_mosaicos_col8_l9)
+  .map(function(image){
+    var start = ee.Date(ee.String('')
+      .cat(image.getNumber('year'))
+      .slice(0,4)
+      .cat('-01-01')).millis();
+    
+    var end = ee.Date(ee.String('')
+      .cat(image.getNumber('year').add(1))
+      .slice(0,4)
+      .cat('-01-01')).millis();
+    
+    return image.set({
+      'system:time_start':start,
+      'system:time_end':end,
+    });
+  });
+
+print(asset_mosaicos_col8.limit(10));
+
+var dataset = {
+  // --- --- --- DATASETS STORED IN OBJECTS
+  // --- --- raster
+
+  'landsat_5_col2':{
+    collection:ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')
+      // -> applying scale factors as example of collection 2 landsat -> https://code.earthengine.google.com/?scriptPath=Examples:Datasets/LANDSAT_LT05_C02_T1_L2
+      .filter(ee.Filter.inList('system:index', options.blockList_landsat).not())
+      .map(function (image){ return image.updateMask(ee.Image().paint(image.geometry().buffer(-3000)).eq(0))})
+      .map(function(image){
+        var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+        var thermalBands = image.select('ST_B.*').multiply(0.00341802).add(149.0);
+        return image.addBands(opticalBands, null, true)
+                    .addBands(thermalBands, null, true);
+      })
+      .map(function (image) {
+        // cloud mask
+        var cloudShadowBitMask = (1 << 3);
+        var cloudsBitMask = (1 << 5);
+      
+      
+        var qa = image.select('QA_PIXEL');
+        var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+            .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+      
+           // noise mask, radiometric saturation
+              function bitwiseExtract(value, fromBit, toBit) {
+                if (toBit === undefined)
+                  toBit = fromBit;
+                var maskSize = ee.Number(1).add(toBit).subtract(fromBit);
+                var mask = ee.Number(1).leftShift(maskSize).subtract(1);
+                return value.rightShift(fromBit).bitwiseAnd(mask);
+              }
+            
+              var clear = bitwiseExtract(qa, 6); // 1 if clear
+              var water = bitwiseExtract(qa, 7); // 1 if water
+            
+              var radsatQA = image.select('QA_RADSAT');
+              var band5Saturated = bitwiseExtract(radsatQA, 4); // 0 if band 5 is not saturated
+              var anySaturated = bitwiseExtract(radsatQA, 0, 6); // 0 if no bands are saturated
+            
+              var mask_saturation = clear
+              //  .or(water)
+                .and(anySaturated.not());
+              
+              // is visible bands with negative reflectance? 
+              var negative_mask = image.select(['SR_B1']).gt(0).and(
+                image.select(['SR_B2']).gt(0)).and(
+                  image.select(['SR_B3']).gt(0)).and(
+                    image.select(['SR_B4']).gt(0)).and(
+                      image.select(['SR_B5']).gt(0)).and(
+                        image.select(['SR_B7']).gt(0));
+        
+            
+        return image
+        .updateMask(mask)
+        .updateMask(mask_saturation);
+        
+      
+      }),//1984-01-01T00:00:00 - 2012-05-05T00:00:00
+    visParams:{
+        min:0.03,
+        max:0.4,
+        gamma: 0.85,
+        bands:['swir1','nir','red'],
+      },
+    period:[1984]
+      .concat(
+        options.all_years.slice(options.all_years.indexOf(1985),options.all_years.indexOf(2012))
+      )
+  },
+  'landsat_7_col2':{
+     collection:ee.ImageCollection('LANDSAT/LE07/C02/T1_L2')
+      .filter(ee.Filter.inList('system:index', options.blockList_landsat).not())      
+      .map(function (image){ return image.updateMask(ee.Image().paint(image.geometry().buffer(-3000)).eq(0))})
+      .map(function(image){
+        var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+        var thermalBands = image.select('ST_B.*').multiply(0.00341802).add(149.0);
+        return image.addBands(opticalBands, null, true)
+                    .addBands(thermalBands, null, true);
+      })
+      .map(function (image) {
+        var cloudShadowBitMask = (1 << 3);
+        var cloudsBitMask = (1 << 5);
+      
+      
+        var qa = image.select('QA_PIXEL');
+        var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
+            .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
+      
+              function bitwiseExtract(value, fromBit, toBit) {
+                if (toBit === undefined)
+                  toBit = fromBit;
+                var maskSize = ee.Number(1).add(toBit).subtract(fromBit);
+                var mask = ee.Number(1).leftShift(maskSize).subtract(1);
+                return value.rightShift(fromBit).bitwiseAnd(mask);
+              }
+            
+              var clear = bitwiseExtract(qa, 6); // 1 if clear
+              var water = bitwiseExtract(qa, 7); // 1 if water
+            
+              var radsatQA = image.select('QA_RADSAT');
+              var band5Saturated = bitwiseExtract(radsatQA, 4); // 0 if band 5 is not saturated
+              var anySaturated = bitwiseExtract(radsatQA, 0, 6); // 0 if no bands are saturated
+            
+              var mask_saturation = clear
+                .and(anySaturated.not());
+              
+              var negative_mask = image.select(['SR_B1']).gt(0).and(
+                image.select(['SR_B2']).gt(0)).and(
+                  image.select(['SR_B3']).gt(0)).and(
+                    image.select(['SR_B4']).gt(0)).and(
+                      image.select(['SR_B5']).gt(0)).and(
+                        image.select(['SR_B7']).gt(0));
+        
+            
+        return image
+        .updateMask(mask)
+        .updateMask(mask_saturation);
+        
+      
+      }),
+      visParams:{
+        min:0.03,
+        max:0.4,
+        gamma: 0.85,
+        bands:['swir1','nir','red'],
+      }, 
+      period:options.all_years
+      .slice(options.all_years.indexOf(1999),options.all_years.indexOf(2013))
+  },
+
+  'landsat_8_col2':{
+    collection:ee.ImageCollection('LANDSAT/LC08/C02/T1_L2')
+      .filter(ee.Filter.inList('system:index', options.blockList_landsat).not())
+      .map(function (image){ return image.updateMask(ee.Image().paint(image.geometry().buffer(-3000)).eq(0))})
+      .map(function(image){
+        var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+        // rectfy to dark corpse reflectance == -0.0000000001
+        opticalBands = opticalBands.multiply(10000).subtract(0.0000275 * 0.2 * 1e5 * 100).round();
+        
+        var thermalBands = image.select('ST_B.*').multiply(0.00341802).add(149.0);
+        return image.addBands(opticalBands, null, true)
+                    .addBands(thermalBands, null, true);
+      })
+      .map(function (image) {
+            // If the cloud bit (3) is set and the cloud confidence (9) is high
+            // or the cloud shadow bit is set (3), then it's a bad pixel.
+            var qa = image.select('QA_PIXEL');
+                var cloud = qa.bitwiseAnd(1 << 3)
+                .and(qa.bitwiseAnd(1 << 9))
+                .or(qa.bitwiseAnd(1 << 4));
+            
+            // If the clear bit (6) is set 
+            // or water bit is set (7), then it's a good pixel 
+            var good_pixel  = qa.bitwiseAnd(1 << 6)
+                .or(qa.bitwiseAnd(1 << 7));
+        
+          // read radsat 
+          var radsatQA = image.select('QA_RADSAT');
+          // Is any band saturated? 
+          var saturated = radsatQA.bitwiseAnd(1 << 0)
+            .or(radsatQA.bitwiseAnd(1 << 1))
+              .or(radsatQA.bitwiseAnd(1 << 2))
+                .or(radsatQA.bitwiseAnd(1 << 3))
+                  .or(radsatQA.bitwiseAnd(1 << 4))
+                    .or(radsatQA.bitwiseAnd(1 << 5))
+                      .or(radsatQA.bitwiseAnd(1 << 6));
+        
+                // is any band with negative reflectance? 
+                var negative_mask = image.select(['SR_B1']).gt(0).and(
+                  image.select(['SR_B2']).gt(0)).and(
+                    image.select(['SR_B3']).gt(0)).and(
+                      image.select(['SR_B4']).gt(0)).and(
+                        image.select(['SR_B5']).gt(0)).and(
+                          image.select(['SR_B7']).gt(0));
+          
+              
+          return image
+          .updateMask(cloud.not())
+          .updateMask(good_pixel)
+          .updateMask(saturated.not());
+         // .updateMask(negative_mask);
+        }),//2013-04-11T00:00:00 - 2021-01-22T00:00:00
+    visParams:{
+        gain: [0.08, 0.06, 0.2],
+        gamma: 0.85,
+        bands:['swir1','nir','red'],
+      },
+    period:options.all_years.slice(options.all_years.indexOf(2013))
+  },
+  'landsat_9_col2':{
+    collection:ee.ImageCollection('LANDSAT/LC09/C02/T1_L2') 
+      .filter(ee.Filter.inList('system:index', options.blockList_landsat).not())
+      .map(function (image){ return image.updateMask(ee.Image().paint(image.geometry().buffer(-3000)).eq(0))})
+      .map(function(image){
+        var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+        // rectfy to dark corpse reflectance == -0.0000000001
+        opticalBands = opticalBands.multiply(10000).subtract(0.0000275 * 0.2 * 1e5 * 100).round();
+        
+        var thermalBands = image.select('ST_B.*').multiply(0.00341802).add(149.0);
+        return image.addBands(opticalBands, null, true)
+                    .addBands(thermalBands, null, true);
+      })
+      .map(function (image) {
+            // If the cloud bit (3) is set and the cloud confidence (9) is high
+            // or the cloud shadow bit is set (3), then it's a bad pixel.
+            var qa = image.select('QA_PIXEL');
+                var cloud = qa.bitwiseAnd(1 << 3)
+                .and(qa.bitwiseAnd(1 << 9))
+                .or(qa.bitwiseAnd(1 << 4));
+            
+            // If the clear bit (6) is set 
+            // or water bit is set (7), then it's a good pixel 
+            var good_pixel  = qa.bitwiseAnd(1 << 6)
+                .or(qa.bitwiseAnd(1 << 7));
+        
+          // read radsat 
+          var radsatQA = image.select('QA_RADSAT');
+          // Is any band saturated? 
+          var saturated = radsatQA.bitwiseAnd(1 << 0)
+            .or(radsatQA.bitwiseAnd(1 << 1))
+              .or(radsatQA.bitwiseAnd(1 << 2))
+                .or(radsatQA.bitwiseAnd(1 << 3))
+                  .or(radsatQA.bitwiseAnd(1 << 4))
+                    .or(radsatQA.bitwiseAnd(1 << 5))
+                      .or(radsatQA.bitwiseAnd(1 << 6));
+        
+                // is any band with negative reflectance? 
+                var negative_mask = image.select(['SR_B1']).gt(0).and(
+                  image.select(['SR_B2']).gt(0)).and(
+                    image.select(['SR_B3']).gt(0)).and(
+                      image.select(['SR_B4']).gt(0)).and(
+                        image.select(['SR_B5']).gt(0)).and(
+                          image.select(['SR_B7']).gt(0));
+          
+              
+          return image
+          .updateMask(cloud.not())
+          .updateMask(good_pixel)
+          .updateMask(saturated.not())
+          .updateMask(negative_mask);
+        }),//2013-04-11T00:00:00 - 2021-01-22T00:00:00
+    visParams:{
+        gain: [0.08, 0.06, 0.2],
+        gamma: 0.85,
+        bands:['swir1','nir','red'],
+      },
+    period:options.all_years.slice(options.all_years.indexOf(2022))
+  },
+  
+  'asset_mosaicos_col8':{
+    collection:asset_mosaicos_col8,
+    visParams:{
+        gain: [0.08, 0.06, 0.2],
+        gamma: 0.85,
+        bands:['swir1','nir','red'],
+      },
+    period:options.all_years.slice(options.all_years.indexOf(1985),options.all_years.indexOf(2022)) 
+  },
+
+
+  // - vector
+  // --- --- auxiliar
+  Paises:{
+    feature:ee.FeatureCollection("FAO/GAUL_SIMPLIFIED_500m/2015/level0")
+      .filter(ee.Filter.inList('ADM0_NAME',[
+        'Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador', 'Guiana', 'French Guiana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela'
+      ])),
+    id:'ADM0_CODE',
+    propertie:'ADM0_NAME'
+  },
+  Biomas:{
+    feature:ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil')
+      .map(function(feature){
+        return feature.set({'CD_Bioma':ee.Number.parse(feature.get('CD_Bioma'))});
+      }),
+    id:'CD_Bioma',
+    propertie:'Bioma'
+  },
+  Regioes:{
+    feature:ee.FeatureCollection('users/geomapeamentoipam/AUXILIAR/regioes_biomas')
+      .map(function(feature){
+        return feature.set({
+          'name':ee.String(feature.get('bioma')).cat('_r').cat(feature.get('id'))
+        });
+      }),
+    id:'region',
+    propertie:'name'
+  
+  },
+  Estados:{
+    feature:ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/estados-2017')
+      .map(function(feature){return feature.set('CD_GEOCUF',ee.Number.parse(feature.get('CD_GEOCUF')))}),
+    id:'CD_GEOCUF',
+    propertie:'NM_ESTADO'
+  },
+  Municipios:{
+    feature:ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/municipios-2020'),
+    id:'CD_MUN',
+    propertie:'MUNICIPIO'
+
+  },
+  UC:{
+    feature:ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/ucs-2019')
+      .map(function(feature){return feature.set('ID',ee.Number.parse(feature.get('ID')))}),
+    id:'ID',
+    propertie:'DESCRICAO'
+  },
+ 
+  Landsat_tile:{
+    feature:ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/cenas-landsat')
+      .map(function(feature){return feature.set('TILE',ee.Number.parse(feature.get('TILE')))}),
+    id:'TILE',
+    propertie:'SPRNOME',
+  },
+  Quadriculas:{
+    feature:ee.FeatureCollection('projects/workspace-ipam/assets/FOGO/quadriculas-area-km-fogo-anual')
+      .map(function(feature){return feature.set({
+        'indice': ee.Number.parse(feature.get('indice')),
+        'indice_str': ee.String('').cat(feature.get('indice'))
+        });
+      }),
+      id:'indice',
+      propertie:'indice_str',
+  },
+
+};
+
+// --- --- --- --- DICTIONARY WITH STYLES OF USER INTERFACE WIDGETS
+var styles = {
+  comum:{
+    // stretch:'both',
+    margin:'0px 0px 0px 0px',
+  },
+  comum_panel:{
+    stretch:'both',
+    margin:'0px 0px 0px 0px',
+  },
+  select_folder:{
+    fontSize:'10px',
+    stretch:'both',
+    margin:'0px 0px 0px 0px',
+    width:'150px',
+  },
+  options_panel:{
+    stretch:'both',
+    margin:'0px 0px 0px 0px',
+    position:'top-right'
+  },
+  comum_label:{
+    stretch:'both',
+    margin:'2px 2px 2px 2px',
+    fontSize:'12px',
+    // backgroundColor:'cccccc'
+  },
+  clearLayers:{
+    margin:'0px 0px 0px 0px',
+    backgroundColor:'ffffff',
+    position:'top-right'
+  },
+  thumbnailButton:{
+    margin:'0px 0px 0px 0px',
+    backgroundColor:'ffffff',
+    position:'top-right',
+    stretch:'horizontal',
+  },
+  check:{
+    stretch:'both',
+    fontSize:'12px',
+    // width:'200px',
+    margin:'1px 1px 1px 1px',
+    height:'20px',
+    backgroundColor:'dddddd'
+
+  },
+  check_month_filter:{
+    stretch:'both',
+    fontSize:'16px',
+    // width:'200px',
+    margin:'1px 1px 1px 1px',
+    // height:'20px',
+    // backgroundColor:'dddddd'
+  },
+  button_expSamples:{
+    stretch:'vertical',
+    // fontSize:'10px',
+    // width:'150px',
+    margin:'0px 0px 0px 0px',
+    // height:'15x',
+    // backgroundColor:'dddddd'
+
+  },
+  export_button:{
+    // fontSize:'10px',
+    height:'20x',
+    stretch:'both',
+    margin:'0px 0px 0px 0px',
+    // position:'top-right',
+    width:'120px',
+  },
+  close_button:{
+    // stretch:'both',
+    fontSize:'12px',
+    width:'50px',
+    // height:'30px',
+    margin:'1px 1px 1px 1px',
+    color:'ff0000',
+    backgroundColor:'ffffffff',
+    // position:'top-left'
+  },
+  buttonThumbnail:{
+    stretch:'vertical',
+    fontSize:'10px',
+    width:'50px',
+    // height:'25px',
+    margin:'1px 1px 1px 1px',
+    // color:'ff0000',
+    backgroundColor:'ffffffff',
+    position:'top-right'
+  },
+  import_button:{
+    // stretch:'horizontal',
+    // width:'50px',
+    // height:'30px',
+    margin:'1px 1px 1px 1px',
+    color:'000000',
+    backgroundColor:'ffffffff',
+    // position:'top-left'
+  },
+  comum_button:{
+    fontSize:'12px',
+    stretch:'both',
+    margin:'1px 1px 1px 1px',
+    // height:'10px',
+    // width:'30px',
+    // position:'bottom-left'
+  },
+  principal_panel:{
+    position:'bottom-left',
+    margin:'0px 0px 0px 0px',
+  },
+  slider_year:{
+    stretch:'horizontal',
+    margin:'0px 0px 0px 0px',
+  },
+  software_name_label:{
+    stretch:'both',
+    margin:'2px 2px 2px 2px',
+    fontSize:'12px',
+    backgroundColor:'cccccc'
+    
+  },
+  subtitle_simbol:{
+    // stretch:'both',
+    margin:'0px 0px 0px 0px',
+    fontSize:'12px',
+    // backgroundColor:'cccccc'
+  },
+  version_textbox:{
+    stretch:'horizontal',
+    margin:'1px 1px 1px 1px',
+    width:'150px',
+    fontSize:'10px'
+  },
+  textbox:{
+    stretch:'horizontal',
+    margin:'1px 1px 1px 1px',
+    width:'300px',
+  },
+  link:{
+    stretch:'horizontal',
+    margin:'1px 1px 1px 1px',
+    position:'top-left'
+  },
+  titleCheckbox:{
+    margin:'0px 0px 0px 0px',
+    fontSize:'12px',
+    stretch:'horizontal',
+  }
+};
+
+// ---- --- --- --- BAND NAME STANDARDIZATION IN SATELLITE IMAGE COLLECTIONS
+var bands = {
+
+  landsat_5_col2:{
+    oldBands:["SR_B1",  "SR_B2",   "SR_B3", "SR_B4", "SR_B5",   "SR_B7",    "QA_PIXEL"],
+    newBands:["blue",   "green",   "red",   "nir",   "swir1",   "swir2",    "QA_PIXEL"]
+  },
+  landsat_7_col2: {
+    oldBands:["SR_B1",  "SR_B2",   "SR_B3", "SR_B4", "SR_B5",   "SR_B7",    "QA_PIXEL"],
+    newBands:["blue",   "green",   "red",   "nir",   "swir1",   "swir2",    "QA_PIXEL"]
+  },
+ 
+  landsat_8_col2:{
+    oldBands:["SR_B1",  "SR_B2",  "SR_B3",   "SR_B4", "SR_B5", "SR_B6",   "SR_B7",   "QA_PIXEL"],
+    newBands:["uv",     "blue",   "green",   "red",   "nir",    "swir1",  "swir2",   "QA_PIXEL"]
+  },
+  landsat_9_col2:{
+    oldBands:["SR_B1",  "SR_B2",  "SR_B3",   "SR_B4", "SR_B5", "SR_B6",   "SR_B7",   "QA_PIXEL"],
+    newBands:["uv",     "blue",   "green",   "red",   "nir",    "swir1",  "swir2",   "QA_PIXEL"]
+  },
+  asset_mosaicos_col8:{
+    oldBands:["blue_median",   "green_median",   "red_median",   "nir_median",   "swir1_median",   "swir2_median"],
+    newBands:["blue",   "green",   "red",   "nir",   "swir1",   "swir2"]
+  },
+
+};
+
+function setLayout (){
+  
+  options.mapp = ui.root.widgets().get(0);
+  
+  options.thumbs = ui.Panel({
+    widgets:[0,1,2,3,4,5,6,7,8,9,10,11,12]
+      .map(function(i){
+        return ui.Panel({
+          widgets:[/*ui.Label(''+ i)*/],
+          layout:ui.Panel.Layout.flow('horizontal'),
+          // style:styles.principal_panel
+        });
+      }),
+    // layout:ui.Panel.Layout.flow('vertical'),
+    // style:styles.principal_panel
+  });
+  options.head = ui.Panel({
+    // widgets:[ui.Label('head')],
+    layout:ui.Panel.Layout.flow('horizontal'),
+    // style:styles.principal_panel
+  });
+  options.secondPanel = ui.Panel({
+    widgets:[options.head/*,options.thumbs*/],
+    layout:ui.Panel.Layout.flow('vertical'),
+    // style:styles.principal_panel
+  });
+  
+  options.splitPanel = ui.SplitPanel({
+    firstPanel:options.mapp,
+    secondPanel:options.secondPanel,
+    orientation:'horizontal',
+    // wipe:,
+    style:{}
+    });
+  
+  options.panel = ui.Panel({
+    widgets:[],
+    layout:ui.Panel.Layout.flow('vertical'),
+    style:styles.principal_panel
+  });
+  
+  options.mapp.add(options.panel);
+  
+  ui.root.widgets().reset([options.splitPanel]);
+
+  var option_box = ee.Image().paint(ee.FeatureCollection([ 
+  ee.Geometry.Polygon(
+          [[[0.29307103076535057, 3.725014863596575],
+            [0.29307103076535057, 2.9792280610229556],
+            [1.1609909526403506, 2.9792280610229556],
+            [1.1609909526403506, 3.725014863596575]]], null, false)
+]),'vazio',0.25).visualize({});
+
+var option_min = ee.Image().paint(ee.FeatureCollection([ 
+  ee.Geometry.Polygon(
+          [[[0.38096165576535057, 3.4399288093250107],
+            [0.38096165576535057, 3.286385157544812],
+            [1.0840866557653506, 3.286385157544812],
+            [1.0840866557653506, 3.4399288093250107]]], null, false)
+])).visualize({});
+
+option_min = option_box.blend(option_min);
+
+var option_max = ee.Image().paint(ee.FeatureCollection([ 
+  ee.Geometry.Polygon(
+          [[[0.39194798389035057, 3.6483631516114237],
+            [0.39194798389035057, 3.0780603900662418],
+            [1.0731003276403506, 3.0780603900662418],
+            [1.0731003276403506, 3.6483631516114237]]], null, false)
+]),'vazio',2).visualize({});
+
+option_max = option_box.blend(option_max);
+
+
+    var clearLayers = ui.Button({
+        label:'clean extra layers',
+        onClick:function(){
+          options.mapp.layers().map(function(layer){
+            if (layer.getShown() === false){
+              options.mapp.remove(layer);
+              options[layer.getName()] = false;
+            return ;
+            }
+            return layer;
+          });
+        },
+        // layout;,
+        style:styles.clearLayers});
+    
+    options.openThumbs = ui.Button({
+        label:'open thumbnails',
+        // onClick:,
+        // layout;,
+        style:styles.thumbnailButton
+    });
+
+    options.textboxDimensions = ui.Textbox({
+      // placeholder:'',
+      value:options.dimensions,
+      // onChange:,
+      // disabled:,
+      style:styles.thumbnailButton
+    });
+        
+    options.layerOrCanvas = ui.Button({
+        label:'Tela',
+        // onClick:,
+        // layout;,
+        style:styles.thumbnailButton});
+    
+    options.mapp.add(clearLayers);
+    options.head.add(options.openThumbs);
+}
+
+function exporting_samples (layer){
+      
+    var properties = {
+          name:stringCorrect(layer['name']).replace('_filter','').replace('_no',''),
+          sat:layer['name'].split('-')[0].replace('_filter','').replace('_no',''),
+          region:layer['name'].split('-')[1],
+          year:layer['name'].split('-')[2],
+          version:options.sample_version,
+          date_export:ee.Date(Date.now()).format('yyyy-MM-dd HH:mm:ss','America/Sao_Paulo'),
+    };
+  
+    var sat = {
+      'landsat_8_col2':'l8',
+      'landsat_5_col2':'l5',
+      'landsat_7_col2':'l7',
+      'landsat_9_col2':'l9',
+      'asset_mosaicos_col8':'assetMosaicosCol8'
+    };
+    
+    sat = sat[properties['sat']];
+    var description = stringCorrect('train_water_wetland_' + properties['region'] + '_' + sat + '_' + properties['version'] + '_' + properties['year']);
+
+    if (layer['name'].split('-').length === 4){
+      properties = {
+        name:stringCorrect(layer['name']),
+        sat:layer['name'].split('-')[0],
+        region:layer['name'].split('-')[1],
+        year:layer['name'].split('-')[2],
+        month: layer['name'].split('-')[3],
+        version:options.sample_version,
+        date_export:ee.Date(Date.now()).format('yyyy-MM-dd HH:mm:ss','America/Sao_Paulo'),
+      }
+    
+    description = stringCorrect('train_water_wetland_' + properties['region'] + '_' + sat + '_' + properties['version'] + '_' + properties['year'] + '_' + properties['month']);
+
+    }
+   /// SETTING FEATURE METADATA 
+    var aguaGeometry = ee.Feature(agua)
+        .set('name',stringCorrect(layer['name']))
+        .set('sat', layer['name'].split('-')[0] )
+        .set('year', ee.Number.parse(layer['name'].split('-')[2]))
+        .set('month', ee.Number.parse(layer['name'].split('-')[3]))
+        .set('reference',33)
+
+    
+    var campoAlagadoGeometry = ee.Feature(campoAlagado)
+        .set('name',stringCorrect(layer['name']))
+        .set('sat', layer['name'].split('-')[0] )
+        .set('year', ee.Number.parse(layer['name'].split('-')[2]))
+        .set('month', ee.Number.parse(layer['name'].split('-')[3]))
+        .set('reference',11)
+    
+    var featureCollection = ee.FeatureCollection([aguaGeometry,campoAlagadoGeometry])
+     print(featureCollection);
+  
+    var image_export = layer['eeObject']
+        .divide(10000)
+        .toFloat()
+        .set(properties);
+        
+
+    var train_test_water = image_export
+      .addBands(ee.Image(1).toFloat().select(['constant'], ['landcover']))
+      .clip(agua);
+        
+    var train_test_wetland = image_export
+      .addBands(ee.Image(0).toFloat().select(['constant'], ['landcover']))
+      .clip(campoAlagado);
+  
+    // coleção amostras
+    var train_test_image = ee.ImageCollection([
+        train_test_water,
+        train_test_wetland
+      ]).mosaic();        
+    
+    var folder = options.folder_toCloud + stringCorrect(layer['name'].split('-')[1]);
+    print('folder',folder);
+    // print(folder + '/' + description, 'properties', properties);
+    // EXPORT TRAIN AND TEST
+    Export.image.toCloudStorage({
+      image: train_test_image.select(options.bands_export),
+      description: 'samples_raster_toBucket_' + description,
+      bucket: 'tensorflow-fire-cerrado1',
+      fileNamePrefix: folder + '/' + description,
+      maxPixels: 1e13,
+      scale: 30,
+      region: featureCollection.geometry().bounds()
+    });
+
+  print('ATENÇÃO! Exporte as amostras para o bucket ' + description + 'na aba tasks');
+
+  Export.table.toAsset({
+        collection: featureCollection, 
+        description: 'samples_vector_toAsset_' + description,
+        assetId: options.folder_toAsset + description,
+    });
+    
+  print('ATENÇÃO! Exporte as amostras para o asset ' + description + 'na aba tasks');
+      
+}
+
+function exporting_mosaic (layer){
+      
+    var properties = {
+          name:stringCorrect(layer['name']),
+          sat:layer['name'].split('-')[0].replace('_filter','').replace('_no',''),
+          region:layer['name'].split('-')[1],
+          year:layer['name'].split('-')[2],
+          date_export:ee.Date(Date.now()).format('yyyy-MM-dd HH:mm:ss','America/Sao_Paulo'),
+    };
+    
+    properties['region'] = properties['region'] + layer['name'].split('-')[0].slice(properties['sat'].length);
+
+    print(properties['region']);
+
+    var description = stringCorrect(properties['region'] + '_' + properties['year']);
+    
+
+    if (layer['name'].split('-').length === 4){
+      properties = {
+        name:stringCorrect(layer['name']).replace('_filter','').replace('_no',''),
+        sat:layer['name'].split('-')[0].replace('_filter','').replace('_no',''),
+        region:layer['name'].split('-')[1],
+        year:layer['name'].split('-')[2],
+        month:layer['name'].split('-')[3],
+        date_export:ee.Date(Date.now()).format('yyyy-MM-dd HH:mm:ss','America/Sao_Paulo'),
+      }
+      
+      if (properties['month'] !== '10' && properties['month'] !== '11' && properties['month'] !== '12'){
+        properties['month'] = '0' + properties['month'];
+      }
+      description =  description + '_' + properties['month'];
+
+    }
+     
+    var bands = ['red','nir','swir1','swir2'];
+    
+    var image_export =   layer['eeObject']
+      .select(options.bands_export.slice(0,-1))
+      .divide(10000)
+      .toFloat()
+      .set(properties)
+      .updateMask(options['region-mask']);
+
+   var switch_folder = {
+      landsat:'mosaicos_to_classify_col1_bqahigh',
+      sentinel_2:'mosaicos_to_classify_sentinel'
+    };
+
+    var folder = switch_folder[properties['sat']];
+
+    // EXPORT MOSAIC
+    Export.image.toCloudStorage({
+      image: image_export,
+      description: 'mosaic_raster_toBucket_' + description,
+      bucket: 'tensorflow-fire-cerrado1',
+      fileNamePrefix: 'mosaicos_to_classify_col2' +  '/' + description,
+      maxPixels: 1e13,
+      scale: 30,
+      region: options['region-bounds']
+    });
+
+  print('ATENÇÃO! Exporte mosaico para o bucket' + description + 'na aba tasks');
+}
+
+function stringCorrect(string) {
+  return string
+    .replace('-','_').replace(' ', '_')
+      .replace('-','_').replace(' ', '_')
+      .replace('-','_').replace(' ', '_')
+      .replace('-','_').replace(' ', '_')
+      .replace('-','_').replace(' ', '_')
+      .replace('-','_').replace(' ', '_')
+    .replace('â', 'a').replace('á', 'a')
+      .replace('â', 'a').replace('á', 'a')
+      .replace('â', 'a').replace('á', 'a')
+      .replace('â', 'a').replace('á', 'a')
+      .replace('â', 'a').replace('á', 'a')
+    .replace('é', 'e')
+      .replace('é', 'e')
+      .replace('é', 'e')
+      .replace('é', 'e')
+      .replace('é', 'e')
+    .replace('í', 'i')
+      .replace('í', 'i')
+      .replace('í', 'i')
+      .replace('í', 'i')
+      .replace('í', 'i')
+    .replace('ô', 'o').replace('ó', 'o')
+      .replace('ô', 'o').replace('ó', 'o')
+      .replace('ô', 'o').replace('ó', 'o')
+      .replace('ô', 'o').replace('ó', 'o')
+      .replace('ô', 'o').replace('ó', 'o')
+    .replace('ú', 'u')
+      .replace('ú', 'u')
+      .replace('ú', 'u')
+      .replace('ú', 'u')
+      .replace('ú', 'u')
+    .toLowerCase();
+}
+
+function samples_export_button (layer) {
+  var btt =  ui.Button({
+    label:'Exp samples',
+    onClick:function(){
+      
+        print('ATENÇÃO: exportando amostras');
+        
+        var msg_importing;
+        
+        var label_textbox = ui.Label({
+        value:'Controle de versão',
+        style:styles.button_expSamples,
+        // targetUrl:
+      });
+    
+        var textbox_version = ui.Textbox({
+            // placeholder:'Ex: v1',
+            value:options.sample_version,
+            onChange:function(value){
+              options.sample_version = value;
+          },
+          // disabled, 
+            style:styles.version_textbox,
+          });
+    
+        var label_select = ui.Label({
+          value:'Escolha a pasta do backup no GEE        ',
+          style:styles.button_expSamples,
+          // targetUrl:
+        });
+    
+        var select = ui.Select({
+          items:
+          [
+               { label:'mensal' , value:'projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/mensal/' }
+
+            ],
+          // placeholder:'null',
+          value:options.folder_toAsset,
+          onChange:function(value){
+            options.folder_toAsset = value;
+          },
+          // disabled:,
+          style:styles.select_folder
+        });    
+     
+        var label_select_cloud = ui.Label({
+          value:'Escolha a pasta do backup no GCS',
+          style:styles.button_expSamples,
+          // targetUrl:
+        });
+
+        var select_cloud = ui.Select({
+          items:
+          [
+               { label:'images_train_test_sentinel' , value:'images_train_test_sentinel/' },               
+               { label:'images_train_test_colecao1' , value:'images_train_test_colecao1/' },               
+               { label:'images_train_test_colecao2' , value:'images_train_test_colecao2/' }
+
+            ],
+          // placeholder:'null',
+          value:options.folder_toCloud,
+          onChange:function(value){
+            options.folder_toCloud = value;
+          },
+          // disabled:,
+          style:styles.select_folder
+        });
+
+        var buttom_export = ui.Button({
+          label:'Exportar',
+          style:styles.import_button
+        });
+
+        buttom_export.onClick(function(){
+            exporting_samples(layer);
+            options.mapp.remove(msg_importing);
+          });
+        
+        var close_button = ui.Button({
+              label:'X',
+              onClick:function(){
+                options.mapp.remove(msg_importing);
+              },
+              // disabled:,
+              style:styles.close_button
+            });
+      
+        var attention_msg = ui.Label({
+              value:'ATENÇÃO: para exportar novas amostras, rodar o codigo novamente',
+              style:styles.link,
+              // targetUrl:'https://docs.google.com/spreadsheets/d/1niCqV-w7hXUtO2DXkDjyg5zKwK64ZvvLC1Hbn_lGsC4/edit#gid=403703259'
+        });
+        
+        var null_label = ui.Label({
+              value:' ',
+              style:styles.link,
+              // targetUrl:'https://docs.google.com/spreadsheets/d/1niCqV-w7hXUtO2DXkDjyg5zKwK64ZvvLC1Hbn_lGsC4/edit#gid=403703259'
+        });
+        
+  
+        var first_line = ui.Panel({
+          widgets:[
+            label_textbox,
+            textbox_version
+  
+          ],
+          layout:ui.Panel.Layout.flow('horizontal'),
+          style:styles.comum_panel
+        });
+
+        var second_line = ui.Panel({
+          widgets:[
+            label_select,
+            select,
+          ],
+          layout:ui.Panel.Layout.flow('horizontal'),
+          style:styles.comum_panel
+        });
+
+        var second_line_cloud = ui.Panel({
+          widgets:[
+            label_select_cloud,
+            select_cloud,
+          ],
+          layout:ui.Panel.Layout.flow('horizontal'),
+          style:styles.comum_panel
+        });
+
+        var third_line = ui.Panel({
+          widgets:[
+            buttom_export,
+            null_label,
+            close_button,
+  
+          ],
+          layout:ui.Panel.Layout.flow('horizontal'),
+          style:styles.comum_panel
+        });
+
+
+        msg_importing = ui.Panel({
+          widgets:[
+            first_line,
+            second_line,
+            // second_line_cloud,
+            attention_msg,
+            third_line
+          ],
+          layout:ui.Panel.Layout.flow('vertical'),
+          style:styles.msg_importing
+        });
+      
+     
+
+      options.mapp.add(msg_importing);
+      
+    },
+
+  });
+    
+    btt.style().set(styles.export_button);
+
+  return btt;
+}
+
+function avaliation_export_button (layer) {
+  var btt =  ui.Button({
+    label:'Exp avaliação',
+    onClick:function(){
+      
+        print('ATENÇÃO: exportando amostras');
+        
+        var msg_importing;
+        
+        var label_textbox = ui.Label({
+        value:'Controle de versão',
+        style:styles.button_expSamples,
+        // targetUrl:
+      });
+    
+        var textbox_version = ui.Textbox({
+            // placeholder:'Ex: v1',
+            value:options.avaliation_version,
+            onChange:function(value){
+              options.avaliation_version = value;
+          },
+          // disabled, 
+            style:styles.version_textbox,
+          });
+    
+        var label_select = ui.Label({
+          value:'Escolha a pasta do backup',
+          style:styles.button_expSamples,
+          // targetUrl:
+        })
+    
+        var select = ui.Select({
+          items:
+          [
+               { label:'AVALIACOES_FOGO' , value:'projects/mapbiomas-workspace/FOGO/AVALIACOES_FOGO/' },
+            
+            ],
+          // placeholder:'null',
+          value:options.folder_toAsset_avaliation,
+          onChange:function(value){
+            options.folder_toAsset_avaliation = value;
+          },
+          // disabled:,
+          style:styles.select_folder
+        });
+
+        var buttom_export = ui.Button({
+          label:'Exportar',
+          onClick:function(){
+            export_avaliations(layer);
+            options.mapp.remove(msg_importing);
+          },
+          // disabled:,
+          style:styles.import_button
+        });
+
+        var close_button = ui.Button({
+              label:'X',
+              onClick:function(){
+                options.mapp.remove(msg_importing);
+              },
+              // disabled:,
+              style:styles.close_button
+            });
+      
+        var attention_msg = ui.Label({
+              value:'ATENÇÃO: para exportar novas avaliações, rodar o codigo novamente',
+              style:styles.link,
+              // targetUrl:'https://docs.google.com/spreadsheets/d/1niCqV-w7hXUtO2DXkDjyg5zKwK64ZvvLC1Hbn_lGsC4/edit#gid=403703259'
+        });
+        
+        var null_label = ui.Label({
+              value:' ',
+              style:styles.link,
+              // targetUrl:'https://docs.google.com/spreadsheets/d/1niCqV-w7hXUtO2DXkDjyg5zKwK64ZvvLC1Hbn_lGsC4/edit#gid=403703259'
+        });
+        
+  
+        var first_line = ui.Panel({
+          widgets:[
+            label_textbox,
+            textbox_version
+  
+          ],
+          layout:ui.Panel.Layout.flow('horizontal'),
+          style:styles.comum_panel
+        });
+
+        var second_line = ui.Panel({
+          widgets:[
+            label_select,
+            select,
+          ],
+          layout:ui.Panel.Layout.flow('horizontal'),
+          style:styles.comum_panel
+        });
+
+        var third_line = ui.Panel({
+          widgets:[
+            buttom_export,
+            null_label,
+            close_button,
+  
+          ],
+          layout:ui.Panel.Layout.flow('horizontal'),
+          style:styles.comum_panel
+        });
+
+
+        msg_importing = ui.Panel({
+          widgets:[
+            first_line,
+            second_line,
+            attention_msg,
+            third_line
+          ],
+          layout:ui.Panel.Layout.flow('vertical'),
+          style:styles.msg_importing
+        });
+      
+     
+
+      options.mapp.add(msg_importing);
+      
+
+    },
+  });
+    
+    btt.style().set(styles.export_button);
+
+  return btt;
+}
+
+function subtitle_simbol (simbol,layer){
+  var style = styles.subtitle_simbol;
+  
+  style['color'] = layer.visParams['palette'][0];
+  
+  return ui.Label({
+    value:simbol,
+    style:style,
+    // targetUrl:
+  });
+}
+
+function plotLayer (layer,obj,thumbnailCollection) {
+  
+  if (obj !== undefined){
+    var post_widget = obj['post_widget'] || undefined; 
+    var pre_widget = obj['pre_widget'] || undefined;
+  }
+    
+  var properties = {
+    name:stringCorrect(layer['name']),
+    sat:layer['name'].split('-')[0],
+    region:layer['name'].split('-')[1],
+    year:layer['name'].split('-')[2],
+  };
+  
+  var name = layer['name'];
+  var check_name = properties['sat'] + '-' + properties['year'];
+  
+
+  if (options[properties['sat']] === true){
+  
+    if (options.firstRound === undefined){
+      options.mapp.addLayer(ee.Image().select(),{},properties['sat'],true);
+    }
+
+    options.mapp.layers().filter(function(ly){
+      return ly.getName().split('-')[0] === name.split('-')[0];
+    }).forEach(function(ly){
+      ly
+        .setEeObject(layer['eeObject'])
+        .setVisParams(layer['visParams'])
+        .setName(layer['name']);
+    });
+    
+    if (thumbnailCollection !== undefined){
+      plotThumbnail(true,thumbnailCollection);  
+    }
+  }
+  
+   options.mapp.layers()
+    .filter(function(ly){
+      return ly.getEeObject().get('start') <= options.year;
+    })
+    .filter(function(ly){
+      return ly.getEeObject().get('end') >= options.year;
+    })
+    .forEach(function(ly){
+      options.mapp.remove(ly);
+    });
+  
+  
+  if (layer['name'].split('-').length === 4){
+    properties = {
+      name:stringCorrect(layer['name']),
+      sat:layer['name'].split('-')[0],
+      region:layer['name'].split('-')[1],
+      year:layer['name'].split('-')[2],
+      month:layer['name'].split('-')[3],
+    }
+    
+    name = layer['name'];
+    check_name = properties['sat'] + '-' + properties['year'] + '-' + properties['month'];
+
+  }
+  
+  var ui_layer = ui.Map.Layer(layer);
+  
+  var check = ui.Checkbox({
+    label:check_name,
+    value:options[properties['sat']] || layer['shown'],
+    onChange:function(value){
+
+      options[properties['sat']] = value;
+
+      if (value === true){
+        
+        options.mapp.layers().filter(function(layer){
+          return layer.getName().split('-')[0] === properties['sat'];
+        }).map(function(layer){
+          return options.mapp.remove(layer);
+        });
+        
+        ui_layer.setShown(true);
+        options.mapp.add(ui_layer);
+        
+        plotThumbnail(true,thumbnailCollection)
+      } 
+      if (value === false){
+        options.mapp.layers().filter(function(layer){
+          return layer.getName().split('-')[0] === properties['sat'];
+        }).map(function(layer){
+          return options.mapp.remove(layer);
+        });
+        
+        plotThumbnail(false,thumbnailCollection)
+      }
+    },
+    // // disabled:,
+    style:styles.check
+  });
+  
+  var widgets = [check];
+
+  if(post_widget !== undefined){
+    widgets = widgets.concat([post_widget]);
+  }
+
+  if(pre_widget !== undefined){
+    widgets = [pre_widget].concat(widgets);
+
+  }
+  
+  var panel = ui.Panel({
+    widgets:widgets,
+    layout:ui.Panel.Layout.flow('horizontal'),
+    style:styles.comum_panel
+  });
+  
+  options.subtitle.add(panel);
+  
+}
+
+function setSampleGeometry() {
+  
+  var buttons_panel = ui.Panel({
+    widgets:[],
+    layout:ui.Panel.Layout.flow('vertical'),
+    style:styles.comum_panel
+  })
+  
+  options.panel.add(buttons_panel);
+  
+  var functions_switch = {
+    import_samples: function(){
+        
+        var agua = ee.FeatureCollection(options.folder_toAsset + options.address)
+            .filter(ee.Filter.eq('reference',33))
+            .geometry()
+            .coordinates()
+            .map(function(list){
+              return ee.Geometry.Polygon(list)
+            });
+          
+          agua.evaluate(function(geometriesList) {
+            var layer = {
+              geometries: geometriesList,
+              name: 'agua',
+              color: '0000FF',
+              shown: true, // Show the layer (already defaults to true).
+              // locked: true, // Lock the layer.
+            };
+            Map.drawingTools().addLayer(layer);
+          });
+          
+          var campoAlagado = ee.FeatureCollection(options.folder_toAsset + options.address)
+            .filter(ee.Filter.eq('reference',11))
+            .geometry()
+            .coordinates()
+            .map(function(list){
+              return ee.Geometry.Polygon(list);
+            });
+          
+          notFire.evaluate(function(geometriesList) {
+            var layer = {
+              geometries: geometriesList,
+              name: 'campoAlagado',
+              color: '45C2A5',
+              shown: true, // Show the layer (already defaults to true).
+              // locked: true, // Lock the layer.
+            };
+            Map.drawingTools().addLayer(layer);
+          });
+
+    
+  },
+    clear_sample:function () {
+      // Add an empty layer to hold the drawn points.
+      Map.drawingTools().layers().forEach(function(layer){
+
+        if (layer.getName().slice(0,7) === 'campoAlagado'){
+          Map.drawingTools().layers().remove(layer)
+        }
+
+        if (layer.getName().slice(0,4) === 'agua'){
+          Map.drawingTools().layers().remove(layer)
+        }
+      });
+
+    },
+  };
+  
+  var widget_switch = {
+    
+    importButton:ui.Button({
+    label:'import samples',
+    onClick:function(){
+      
+      print('ATENÇÃO: importando amostras');
+      
+      var first_line = ui.Panel({
+        widgets:[],
+        layout:ui.Panel.Layout.flow('horizontal'),
+        style:styles.comum_panel
+      });
+      var second_line = ui.Panel({
+        widgets:[],
+        layout:ui.Panel.Layout.flow('horizontal'),
+        style:styles.comum_panel
+      });
+      
+      var select = ui.Select({
+          items:
+          [
+               { label:'AMOSTRAS_COLECAO1' , value:'projects/mapbiomas-workspace/FOGO/AMOSTRAS_COLECAO1/' },
+               { label:'AMOSTRAS_COLECAO2' , value:'projects/mapbiomas-workspace/FOGO/AMOSTRAS_COLECAO2/' },
+               { label:'AMOSTRAS_SENTINEL' , value:'projects/mapbiomas-workspace/FOGO/AMOSTRAS_SENTINEL/' },
+              // { label:'AVALIACOES_FOGO' , value:'projects/mapbiomas-workspace/FOGO/AVALIACOES_FOGO/' },
+            
+            ],
+          // placeholder:'null',
+          value:options.folder_toAsset,
+          onChange:function(value){
+            options.folder_toAsset = value
+          },
+          // disabled:,
+          style:styles.select_folder
+        });
+      
+      var textbox = ui.Textbox({
+          placeholder:'insira um endereço de amostras de fogo',
+          // value:,
+          onChange:function(value){
+            options.address = value;
+          },
+          // disabled:,
+          style:styles.textbox
+          });
+      
+      var import_button = ui.Button({
+            label:'importar',
+            // onClick:,
+            // disabled:,
+            style:styles.import_button
+          });
+
+
+      import_button.onClick(function(value){
+
+      functions_switch['clear_sample']();
+      functions_switch['clear_sample']();
+      functions_switch['import_samples']();
+        options.mapp.remove(msg_importing);
+      });
+      
+      var close_button = ui.Button({
+            label:'X',
+            onClick:function(){
+              options.mapp.remove(msg_importing);
+            },
+            // disabled:,
+            style:styles.close_button
+          });
+    
+      var link = ui.Label({
+            value:'consulte os endereços',
+            style:styles.link,
+            targetUrl:'https://docs.google.com/spreadsheets/d/1niCqV-w7hXUtO2DXkDjyg5zKwK64ZvvLC1Hbn_lGsC4/edit#gid=757401350'
+      })
+      
+      first_line
+        .add(select)
+        .add(textbox)
+      
+      second_line
+        .add(import_button)
+        .add(link)
+        .add(close_button)
+      
+      var attention_msg = ui.Label({
+        value:'ATENÇÃO: para exportar novas avaliações, rodar o codigo novamente',
+        style:styles.link,
+        // targetUrl:'https://docs.google.com/spreadsheets/d/1niCqV-w7hXUtO2DXkDjyg5zKwK64ZvvLC1Hbn_lGsC4/edit#gid=403703259'
+      });
+
+      
+      var msg_importing = ui.Panel({
+        widgets:[
+          first_line,
+          attention_msg,
+          second_line,
+        ],
+        layout:ui.Panel.Layout.flow('vertical'),
+        style:styles.comum_panel
+      });
+      
+     
+
+      options.mapp.add(msg_importing);
+      
+      
+    },
+    // disabled:,
+    style:styles.comum_button,
+    }),
+    clearGeometrysButton:ui.Button({
+    label:'clean samples',
+    onClick:function(){
+      functions_switch['clear_sample']();
+      functions_switch['clear_sample']();
+      
+      Map.drawingTools().layers().add(ui.Map.GeometryLayer({
+        geometries:null,
+        name:'agua',
+        color:'ff0000',
+        shown:true,
+        // locked:
+      }))
+        
+      Map.drawingTools().layers().add(ui.Map.GeometryLayer({
+        geometries:null,
+        name:'campoAlagado',
+        color:'0000ff',
+        shown:true,
+        // locked:
+      }));
+      
+      print('limpar poligonos');
+    },
+    // disabled:,
+    style:styles.comum_button,
+  }),
+
+
+  };
+  
+  var panelButton_1 = ui.Panel({
+    widgets:[
+      widget_switch['importButton'],
+      widget_switch['clearGeometrysButton']
+    ],
+    layout:ui.Panel.Layout.flow('horizontal'),
+    style:styles.comum_panel
+  });
+
+
+  buttons_panel
+  .add(panelButton_1)
+ 
+}
+
+function setSelect(){
+  var label = ui.Label({
+    value:'Choose table then layer',
+    style:styles.comum_label,
+    // targetUrl:
+    });
+  
+  options.list = dataset[options.region_table]['feature']
+            .aggregate_array(dataset[options.region_table]['propertie'])
+            .distinct()
+            .sort()
+            .getInfo()
+        
+
+  var sub_select; 
+
+  options.vector = dataset[options.region_table]['feature']
+    .filter(ee.Filter.eq(dataset[options.region_table]['propertie'],options.region));
+
+  options['region-mask'] = ee.Image().paint(options.vector,dataset[options.region_table]['id']);
+  options['region-line'] = ee.Image().paint(options.vector,'vazio',2.5);
+
+  options['region-bounds'] = options.vector.geometry().bounds();
+
+  // print(options['region-mask'],options['region-bounds'])
+  
+  var select = ui.Select({
+    items:options.auxiliar, 
+    // placeholder:,
+    value:options.region_table,
+    onChange:function(value){
+        // print(value)
+      options.region_table = value;
+      
+      if (value === 'Tela'){
+        options.list = ['Tela'];
+        
+        dataset['Tela']['feature'] = ee.FeatureCollection(ee.Feature(ee.Geometry.Rectangle(options.mapp.getBounds()),{
+          id:1,
+          tile:'canvas',
+        }));
+      }
+
+      
+      // print(dataset[options.region_table],options.region_table,dataset[options.region_table]['feature']);
+
+      options.list = dataset[options.region_table]['feature']
+          .aggregate_array(dataset[options.region_table]['propertie'])
+          .distinct()
+          .sort()
+          .getInfo();
+          
+      options.region = options.list[0];
+      
+      options.vector = dataset[options.region_table]['feature']
+        .filter(ee.Filter.eq(dataset[options.region_table]['propertie'],options.region));
+        
+      options['region-mask'] = ee.Image().paint(options.vector,dataset[options.region_table]['id']);
+      
+      options['region-line'] = ee.Image().paint(options.vector,'vazio',2.5);
+      
+      options['region-bounds'] = options.vector.geometry().bounds();
+      
+      setSubtitle();
+            
+        options.select.remove(sub_select)
+      
+        sub_select = ui.Select({
+            items:options.list,
+            placeholder:'tabela',
+            value:options[options.region_table] || options.list[0],
+            onChange:function(sub_value){
+
+              options.region = sub_value;
+
+              options[options.region_table] = sub_value
+
+              options.vector = dataset[options.region_table]['feature']
+                .filter(ee.Filter.eq(dataset[options.region_table]['propertie'],options.region));
+              options['region-mask'] = ee.Image().paint(options.vector,dataset[options.region_table]['id']);
+              options['region-line'] = ee.Image().paint(options.vector,'vazio',2.5);
+              options['region-bounds'] = options.vector.geometry().bounds();
+              
+              setSubtitle();
+              
+              options.mapp.centerObject(options.vector.geometry());
+        
+              options.layerOrCanvas.setLabel('Tela');
+              //setThumbs();
+  
+         
+            },
+            // disabled:,
+            style:styles.comum_button
+          })
+
+        
+        options.select.insert(2,sub_select);
+        options.mapp.centerObject(options.vector.geometry());
+        
+        
+      options.layerOrCanvas.setLabel('Tela');
+      //setThumbs();
+
+      },
+    // disabled:,
+    style:styles.comum_button
+  })
+  
+  sub_select = ui.Select({
+          items:options.list,
+          // placeholder:,
+          value:options.region,
+          onChange:function(sub_value){
+
+            options.region = sub_value;
+            
+            options.vector = dataset[options.region_table]['feature']
+              .filter(ee.Filter.eq(dataset[options.region_table]['propertie'],options.region));
+            options['region-mask'] = ee.Image().paint(options.vector,dataset[options.region_table]['id']);
+            options['region-line'] = ee.Image().paint(options.vector,'vazio',2.5);
+            options['region-bounds'] = options.vector.geometry().bounds();
+            
+            setSubtitle();
+            options.mapp.centerObject(options.vector.geometry());
+            
+            options.layerOrCanvas.setLabel('Tela');
+            //setThumbs();
+  
+            // Map.addLayer(options['region-mask'])
+            // Map.addLayer(options['region-bounds'])
+            
+          },
+          // disabled:,
+          style:styles.comum_button
+        })
+
+  
+  options.select
+    .add(label)
+    .add(select)
+    .add(sub_select);
+
+}
+
+function setSubtitle (){
+  // --- programação orientado a listas
+  
+  // - limpa o painel para inserir novos valores em pilhas
+  options.subtitle.clear();
+  
+
+  // - plote de coleções de imagens de satelite de superficie de reflectancia
+  function collection_sr_plot_no_filter (col){
+      
+      var start = dataset[col]['period'][0];
+      var end = dataset[col]['period'][(dataset[col]['period'].length - 1)];
+
+
+      if (0 <= dataset[col]['period'].indexOf(options.year)){
+          
+      } else {
+        
+         return ; 
+      }
+
+      var name =  col + /*'_no_filter-'*/ '-' + options.region + '-' + options.year;
+
+      var visParams = dataset[col]['visParams']
+      
+        
+      var start = '' + options.year + '-01-01';
+      var end = '' + (options.year + 1) + '-01-01';
+      
+      var regionMask = options['region-mask']
+      
+    // thumbnail 
+      
+      var thumbnailCollection = [
+        {
+          eeObject:dataset[col]['collection']
+          .filterDate(start,end)
+          .select(bands[col]['oldBands'],bands[col]['newBands'])
+          .map(function(image){
+            
+            var ndvi = '(b("nir") - b("red") ) / ( b("nir") + b("red") )'
+            
+            var ndwi = '(b("nir") - b("swir1"))/ ( b("nir") + b("swir1"))'
+            
+            
+ var exp = '((((b("nir") - b("red") ) / ( b("nir") + b("red") )) - ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))) / (((b("nir") - b("red") ) / ( b("nir") + b("red") )) + ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))))';
+
+
+            var indNDDI = image
+              .expression(exp)
+              .rename("nddi")
+              .add(1)
+              .multiply(1000)
+            //  .multiply(-1)
+              .int16();
+            
+            return image
+              .addBands(indNDDI);
+          }).qualityMosaic('nddi')
+          .updateMask(regionMask),
+          visParams:visParams,
+          name:name,
+        }
+      ];
+       
+      
+      var months = [1,2,3,4,5,6,7,8,9,10,11,12];
+      
+
+      
+      months
+        .forEach(function(month){
+          var name_temp = name + '-' + month;
+        
+          var start_temp = '' + options.year + '-' + month + '-01';
+          var end_temp = '' + options.year + '-' + (month + 1) + '-01';
+          
+          if (month === 12){
+            end_temp = '' + (options.year + 1) + '-01-01';
+          };
+  
+        var thumbLayer = {
+          eeObject:dataset[col]['collection']
+          .filterDate(start_temp,end_temp)
+          .select(bands[col]['oldBands'],bands[col]['newBands'])
+                    .map(function(image){
+            
+         //var ndvi = 
+        //   var ndwi = '(b("nir") - b("swir1"))/ ( b("nir") + b("swir1"))'
+            var exp = '((((b("nir") - b("red") ) / ( b("nir") + b("red") )) - ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))) / (((b("nir") - b("red") ) / ( b("nir") + b("red") )) + ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))))';
+
+            var indNDDI = image
+              .expression(exp)
+              .rename("nddi")
+              .add(1)
+              .multiply(1000)
+              .int16();
+            
+            return image
+              .addBands(indNDDI);
+          }).qualityMosaic('nddi')
+          .updateMask(regionMask),
+          visParams:visParams,
+          name: name + '-' + month,
+        }
+          thumbnailCollection[month] = thumbLayer; 
+        })
+
+      if (options.month_filter === true){
+        name = name  + '-' + options.month;
+        
+        start = '' + options.year + '-' + options.month + '-01';
+        end = ee.String('' + options.year + '-').cat(ee.Number.parse(options.month).add(1)).cat('-01');
+        
+        if (options.month === '12'){
+          end = '' + (options.year + 1) + '-01-01';
+        }
+      }
+
+      var eeObject = dataset[col]['collection']
+        .filterDate(start,end)
+        .select(bands[col]['oldBands'],bands[col]['newBands'])
+                  .map(function(image){
+            
+            var ndvi = '(b("nir") - b("red") ) / ( b("nir") + b("red") )'
+            
+            var ndwi = '(b("nir") - b("swir1"))/ ( b("nir") + b("swir1"))'
+  var exp = '((((b("nir") - b("red") ) / ( b("nir") + b("red") )) - ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))) / (((b("nir") - b("red") ) / ( b("nir") + b("red") )) + ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))))';
+
+            var indNDDI = image
+              .expression(exp)
+              .rename("nddi")
+              .add(1)
+              .multiply(1000)
+              .int16();
+            
+            return image
+              .addBands(indNDDI);
+          }).qualityMosaic('nddi');
+      
+       var layer = 
+        {
+        eeObject:eeObject
+          .updateMask(regionMask)
+          .set({
+            start:start,
+            end:end,
+          }),
+        visParams:visParams,
+        name:name,
+        shown:  options[col] || false,
+        opacity: dataset[col]['opacity'] || 1
+      };
+
+      if (col.slice(0,7) === 'landsat'){
+        var pre_widget = samples_export_button(layer);
+      } else {
+        var pre_widget = ui.Label('',styles.comum)
+      }
+       var pre_widget = samples_export_button(layer);
+    plotLayer(layer,{
+        post_widget:pre_widget,
+      },thumbnailCollection);
+    }
+
+  function collection_sr_plot_filter (col){
+      
+      
+      var start = dataset[col]['period'][0];
+      var end = dataset[col]['period'][(dataset[col]['period'].length - 1)];
+
+
+      if (0 <= dataset[col]['period'].indexOf(options.year)){
+       } else {
+         return ; 
+      }
+
+      var name =  col + '_filter-' + options.region + '-' + options.year;
+      var visParams = dataset[col]['visParams']
+      
+        
+      var start = '' + options.year + '-01-01';
+      var end = '' + (options.year + 1) + '-01-01';
+      
+      var regionMask = options['region-mask'].updateMask(dataset['BUFFER-FOCUS']['collection']
+          .filterDate(start,end)
+          .mosaic());
+      
+    // thumbnail 
+      
+      var thumbnailCollection = [
+        {
+          eeObject:dataset[col]['collection']
+          .filterDate(start,end)
+          .select(bands[col]['oldBands'],bands[col]['newBands'])
+                    .map(function(image){
+            var ndvi = '(b("nir") - b("red") ) / ( b("nir") + b("red") )'
+            
+            var ndwi = '(b("nir") - b("swir1"))/ ( b("nir") + b("swir1"))'
+            
+            
+ var exp = '((((b("nir") - b("red") ) / ( b("nir") + b("red") )) - ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))) / (((b("nir") - b("red") ) / ( b("nir") + b("red") )) + ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))))';
+
+            var indNDDI = image
+              .expression(exp)
+              .rename("nddi")
+              .add(1)
+              .multiply(1000)
+              .int16();
+            
+            return image
+              .addBands(indNDDI);
+          }).qualityMosaic('nddi')
+            .updateMask(regionMask),
+          visParams:visParams,
+          name:name,
+        }
+      ];
+       
+      
+      var months = [1,2,3,4,5,6,7,8,9,10,11,12];
+      
+      
+      months
+        .forEach(function(month){
+          var start_temp = '' + options.year + '-' + month + '-01';
+          var end_temp = '' + options.year + '-' + (month + 1) + '-01';
+          
+          if (month === 12){
+            end_temp = '' + (options.year + 1) + '-01-01';
+          };
+  
+        var regionMask_temp = regionMask.updateMask(dataset['BUFFER-FOCUS']['collection']
+            .filterDate(start_temp,end_temp)
+            .mosaic());
+
+        var thumbLayer = {
+          eeObject:dataset[col]['collection']
+          .filterDate(start_temp,end_temp)
+          .select(bands[col]['oldBands'],bands[col]['newBands'])
+                    .map(function(image){
+            var ndvi = '(b("nir") - b("red") ) / ( b("nir") + b("red") )'
+            
+            var ndwi = '(b("nir") - b("swir1"))/ ( b("nir") + b("swir1"))'
+            
+            
+ var exp = '((((b("nir") - b("red") ) / ( b("nir") + b("red") )) - ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))) / (((b("nir") - b("red") ) / ( b("nir") + b("red") )) + ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))))';
+
+            var indNDDI = image
+              .expression(exp)
+              .rename("nddi")
+              .add(1)
+              .multiply(1000)
+              .int16();
+            
+            return image
+              .addBands(indNDDI);
+          }).qualityMosaic('nddi')
+          .updateMask(regionMask_temp),
+          visParams:visParams,
+          name: name + '-' + month,
+        }
+          thumbnailCollection[month] = thumbLayer; 
+        })
+
+      if (options.month_filter === true){
+        name = name + '-' + options.month;
+        
+        start = '' + options.year + '-' + options.month + '-01';
+        end = ee.String('' + options.year + '-').cat(ee.Number.parse(options.month).add(1)).cat('-01');
+        
+        if (options.month === '12'){
+          end = '' + (options.year + 1) + '-01-01';
+        }
+      }
+
+      regionMask = regionMask.updateMask(dataset['BUFFER-FOCUS']['collection']
+        .filterDate(start,end)
+        .mosaic());
+
+      
+      var eeObject = dataset[col]['collection']
+        .filterDate(start,end)
+        .select(bands[col]['oldBands'],bands[col]['newBands'])
+          .map(function(image){
+            
+            var ndvi = '(b("nir") - b("red") ) / ( b("nir") + b("red") )'
+            
+            var ndwi = '(b("nir") - b("swir1"))/ ( b("nir") + b("swir1"))'
+            
+            
+ var exp = '((((b("nir") - b("red") ) / ( b("nir") + b("red") )) - ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))) / (((b("nir") - b("red") ) / ( b("nir") + b("red") )) + ((b("nir") - b("swir1"))/ ( b("nir") + b("swir1")))))';
+
+            var indNDDI = image
+              .expression(exp)
+              .rename("nddi")
+              .add(1)
+              .multiply(1000)
+              .int16();
+            
+            return image
+              .addBands(indNDDI);
+          }).qualityMosaic('nddi');
+      
+ 
+      
+      var layer = 
+      // ui.Map.Layer( // manter como omples
+        {
+        eeObject:eeObject
+          .updateMask(regionMask)
+          .set({
+            start:start,
+            end:end,
+          }),
+        visParams:visParams,
+        name:name,
+        shown:  options[col] || false,
+        opacity: dataset[col]['opacity'] || 1
+      };
+
+
+      if (col.slice(0,-2) === 'landsat'){
+        var pre_widget = samples_export_button(layer);
+      } else {
+        var pre_widget = ui.Label('',styles.comum)
+      }
+
+      
+      plotLayer(layer,{
+        post_widget:pre_widget,
+        // pre_widget:buttons,
+      },thumbnailCollection);
+    }
+  
+  // - plote de coleções de dados de produtos de area queimada 
+  function collection_scar_plot  (col){
+      
+      
+      var start = dataset[col]['period'][0];
+      var end = dataset[col]['period'][(dataset[col]['period'].length - 1)];
+
+
+      if (0 <= dataset[col]['period'].indexOf(options.year)){
+          // print ('Layer adicionada ' + scar_image + '-' + model + '-' + options.version + '-' + options.year);
+      } else {
+        // print ('não exite dados ' + scar_image + '-' + model + '-' + options.version + '-' + options.year, 'os dados se encontram no intervalo de anos de ' + start + ' à ' + end);
+         return ; 
+      }
+      
+      var eeObject = dataset[col]['collection'];
+      var name =  col + '-' + options.region + '-' + options.year;
+      var visParams = dataset[col]['visParams']
+      
+        
+      var start = '' + options.year + '-01-01';
+      var end = '' + (options.year + 1) + '-01-01';
+      
+      var regionMask = options['region-mask']
+
+      // thumbnail 
+      
+      var thumbnailCollection = [
+        {
+          eeObject:dataset[col]['collection']
+          .filterDate(start,end)
+          .mosaic().max()
+          .updateMask(regionMask),
+          visParams:visParams,
+          name:name,
+        }
+      ];
+      
+      
+      
+      var months = [1,2,3,4,5,6,7,8,9,10,11,12];
+      
+      
+      months
+        .forEach(function(month){
+          var name_temp = col + '-' + options.region + '-' + options.year + '-' + month;
+        
+          var start_temp = '' + options.year + '-' + month + '-01';
+          var end_temp = '' + options.year + '-' + (month + 1) + '-01';
+          
+          if (month === 12){
+            end_temp = '' + (options.year + 1) + '-01-01';
+          };
+          
+        var thumbLayer = {
+          eeObject:dataset[col]['collection']
+          .filterDate(start_temp,end_temp)
+          .mosaic().max()
+          .updateMask(regionMask),
+          visParams:visParams,
+          name: col + '-' + options.region + '-' + options.year + '-' + month,
+        }
+          thumbnailCollection[month] = thumbLayer; 
+        })
+      
+
+      if (options.month_filter === true){
+        name = col + '-' + options.region + '-' + options.year + '-' + options.month;
+        
+        start = '' + options.year + '-' + options.month + '-01';
+        end = ee.String('' + options.year + '-').cat(ee.Number.parse(options.month).add(1)).cat('-01')
+
+        if (options.month === '12'){
+          end = '' + (options.year + 1) + '-01-01';
+        }
+      }
+      
+            
+      eeObject = dataset[col]['collection']
+        .filterDate(start,end)
+        .mosaic().max();
+
+      var layer ={
+        eeObject:eeObject
+          .updateMask(regionMask)
+          .set({
+            start:start,
+            end:end,
+          }),
+        visParams:visParams,
+        name:name,
+        shown: options[col] || false, 
+        opacity:dataset[col]['opacity'] || 1,
+      };
+      
+      plotLayer(layer,{
+        // post_widget:post_widget,
+        pre_widget:subtitle_simbol('▉',layer), //-> caracteres especiais ->https://economaster.com.br/textual-master/caracteres-especiais/
+      },thumbnailCollection);
+    }
+  
+  // - plote das camadas de localização
+  function region_vis_plot (line){
+  
+  var switch_lines = {
+    'line':{
+      image:ee.Image().paint({
+        featureCollection:options.vector,
+        color:dataset[options.region_table]['id'], 
+        width:1
+      }),
+      name:'Limite-' + line + '-'  + options.region,
+      visParams:{palette:['000000']},
+    },
+    'lines':{
+      image:ee.Image().paint({
+        featureCollection:dataset[options.region_table]['feature'],
+        color:dataset[options.region_table]['id'], 
+        width:0.25
+      }),
+      name:'Limites-' + line + '-' + options.region_table,
+      visParams:{palette:['808080']},
+    },
+    'Quadriculas':{
+      image:ee.Image().paint({
+        featureCollection:dataset['Quadriculas']['feature'].filterBounds(options.vector),
+        color:dataset['Quadriculas']['id'], 
+        width:0.25
+      }),
+      name:'Quadriculas-' + line + '-'  + options.region,
+      visParams:{palette:['000000']},
+    },
+    'square':{
+      image:ee.Image().paint({
+        featureCollection:options['region-bounds'],
+        color:dataset[options.region_table]['id'], 
+        width:0.25
+      }),
+      name:'Quadro-' + line + '-'  + options.region,
+      visParams:{palette:['000000']},
+    }
+  };
+  
+  var eeObject = switch_lines[line]['image'];
+  
+  var name = switch_lines[line]['name'];
+
+  var visParams = switch_lines[line]['visParams'];  
+  var layer = {
+    eeObject:eeObject,
+    visParams:visParams,
+    name:name,
+    shown: options[name.split('-')[0]] || false,
+    opacity:  1
+  };
+
+     plotLayer(layer,{
+        // post_widget:,
+        pre_widget:subtitle_simbol('⊟',layer), //-> caracteres especiais ->https://economaster.com.br/textual-master/caracteres-especiais/
+      });
+  }
+  
+  
+  function collection_hotspots  (){
+      
+      // print(col,dataset[col])
+
+      var period = options.all_years.slice(options.all_years.indexOf(2000));
+
+      var start = period[0];
+      var end = period[(period.length - 1)];
+
+
+      if (0 <= period.indexOf(options.year)){
+          // print ('Layer adicionada ' + scar_image + '-' + model + '-' + options.version + '-' + options.year);
+      } else {
+        // print ('não exite dados ' + scar_image + '-' + model + '-' + options.version + '-' + options.year, 'os dados se encontram no intervalo de anos de ' + start + ' à ' + end);
+         return ; 
+      }
+      
+      var name =  'Focos de calor' + '-' + options.region + '-' + options.year;
+      
+      var visParams = {}
+      
+      var eeObject = ee.FeatureCollection([]);
+      
+      var months = ['01','02','03','04','05','06','07','08','09','10','11','12']
+      
+      
+      months 
+      .forEach(function(m){
+          eeObject = eeObject
+            .merge(ee.FeatureCollection('projects/workspace-ipam/assets/FOGO/monthly-focus-sul-america/focus_' + options.year + '-' + m));
+        });
+      
+      
+      
+      
+      if (options.month_filter === true){
+        eeObject = ee.FeatureCollection('projects/workspace-ipam/assets/FOGO/monthly-focus-sul-america/focus_' + options.year + '-' + options.month);
+          
+        name = name + '-' + options.month
+      }
+        
+      eeObject = eeObject
+        .filterBounds(options.vector.geometry());
+
+      var post_widget = ui.Label('')
+
+
+    }
+  
+  // --- Executando os plotes em função das listas organizadas
+  options.region_vis.forEach(region_vis_plot);
+  options.collection_sr.forEach(collection_sr_plot_no_filter);
+  
+  }
+
+function plotThumbnail (boolean,collectionThumbnail){
+    
+    
+    if (options.openThumbs.getLabel() === 'open thumbnails'){
+      return 
+    };
+    
+    if (collectionThumbnail === undefined){
+      return 
+    };
+    
+    var geom;
+
+    if ( options.layerOrCanvas.getLabel() !== 'Camada'){
+      geom = options.vector.geometry().bounds()
+    } else {
+      geom = ee.Geometry.Rectangle(options.mapp.getBounds())
+    }
+    
+    var widgets_list = options.thumbs.widgets();
+    
+    if (options.newThumbnails === true){
+        options['panelThumbnail'+collectionThumbnail[0]['name']].forEach(function(thumb){
+        widgets_list
+          .get(options['panelThumbnail'+collectionThumbnail[0]['name']].indexOf(thumb))
+          .remove(thumb)
+    });
+  
+      options['panelThumbnail'+collectionThumbnail[0]['name']] = undefined;
+    };
+    
+    
+    if (options['panelThumbnail'+collectionThumbnail[0]['name']] === undefined){
+      
+      options['panelThumbnail'+collectionThumbnail[0]['name']] = collectionThumbnail.map( function (thumbnail){
+    
+            var layer_obj = {
+              eeObject:thumbnail['eeObject'],
+              visParams:thumbnail['visParams'],
+              name:thumbnail['name'],
+              shown:true,
+              opacity:0.9
+            };
+            
+            // print(layer_obj)
+            var layer = ui.Map.Layer(layer_obj);
+            
+            var title  = ui.Checkbox({
+              label:layer_obj['name'],
+              value:options['thumbnail-'+layer_obj['name']] || false,
+              onChange:function(value){
+                
+                if (value === true){
+                  options['thumbnail-'+layer_obj['name']] = true
+                  options.mapp.add(layer);
+    
+                } else {
+                  options['thumbnail-'+layer_obj['name']] = false
+                  options.mapp.remove(layer);
+                }
+              },
+              style:styles.titleCheckbox
+            });
+           
+            var reload = ui.Button({
+              label:'↻',
+              onClick:function(){
+                // print('↻')
+              },
+              // disabled:,
+              style:styles.buttonThumbnail,
+              // imageUrl:
+            });
+            
+            var geotiff = ui.Button({
+              label:'export',
+              onClick:function(){
+                exporting_mosaic(layer_obj);
+              },
+              // disabled:,
+              style:styles.buttonThumbnail,
+              // imageUrl:
+            });
+           
+            var options_panel = ui.Panel({
+              widgets:[
+                title,
+                reload,
+                geotiff,
+              ],
+              layout:ui.Panel.Layout.flow('horizontal'),
+              style:styles.options_panel
+            })
+            
+            var thumbnail = ui.Thumbnail({
+              image:layer_obj['eeObject']
+                  .visualize(layer_obj['visParams'])
+                  .blend(options['region-line'].visualize({palette:'000000'})),
+                params:{
+                  dimensions:options.dimensions,
+                  region:geom,
+                },
+                onClick:function(){
+                  print(layer_obj['name'])
+    
+                },
+                style:{
+                  backgroundColor:'fffbfb'
+                }
+              });
+            
+            var panel_thumbs = ui.Panel({
+              widgets:[
+                options_panel,
+                thumbnail,
+    
+              ],
+              layout:ui.Panel.Layout.flow('vertical'), 
+                // style:,
+              })
+            
+
+            reload.onClick(function(){
+              panel_thumbs.remove(thumbnail);
+              
+              thumbnail = ui.Thumbnail({
+                image:layer_obj['eeObject']
+                  .visualize(layer_obj['visParams'])
+                  .blend(options['region-line'].visualize({palette:'000000'})),
+                  params:{
+                    dimensions:options.dimensions,
+                    region:geom,
+                  },
+                  // onClick:,
+                  style:{
+                    backgroundColor:'fffbfb'
+                  }
+              });
+              
+              panel_thumbs.insert(1,thumbnail);
+              
+            });
+            
+            return panel_thumbs;
+        
+      });
+    
+    }
+    
+    
+    var ploted_thumbs = widgets_list.get(0).widgets();
+    
+    ploted_thumbs.forEach(function(ploted_thumb){
+      
+      // print(collectionThumbnail[0]['name'].split('-')[0], ploted_thumb.widgets().get(0).widgets().get(0).getLabel().split('-')[0], collectionThumbnail[0]['name'].split('-')[0] === ploted_thumb.widgets().get(0).widgets().get(0).getLabel().split('-')[0])
+      if(collectionThumbnail[0]['name'].split('-')[0] === ploted_thumb.widgets().get(0).widgets().get(0).getLabel().split('-')[0]){
+        options['panelThumbnail'+ ploted_thumb.widgets().get(0).widgets().get(0).getLabel()].forEach(function(thumb){
+        widgets_list
+          .get(options['panelThumbnail'+ploted_thumb.widgets().get(0).widgets().get(0).getLabel()].indexOf(thumb))
+          .remove(thumb)
+        })
+      };
+    });
+    
+    if (boolean === true){
+      
+      options['panelThumbnail'+collectionThumbnail[0]['name']].forEach(function(thumb){
+        widgets_list
+          .get(options['panelThumbnail'+collectionThumbnail[0]['name']].indexOf(thumb))
+          .add(thumb)
+      });
+
+    };
+}
+  
+function onClickThumbs (){
+    
+    if (options.openThumbs.getLabel() === 'close thumbnails'){
+      options.openThumbs.setLabel('open thumbnails');
+      options.secondPanel.remove(options.thumbs);
+      options.head.remove(options.layerOrCanvas);
+      options.head.remove(options.textboxDimensions);
+
+      
+      return ;
+    } else {
+      options.openThumbs.setLabel('close thumbnails');
+      options.head.insert(1,options.textboxDimensions);
+      options.head.insert(1,options.layerOrCanvas);
+      
+      options.secondPanel.add(options.thumbs);
+      
+      setSubtitle();
+      return ;
+    }
+  }
+  
+function onChangeoTextboxDimensions (value){
+    
+    if (value === options.dimensions){
+      return ;
+    }
+    
+    options.dimensions = value
+    options.newThumbnails = true;
+    setSubtitle();
+    options.newThumbnails = false;
+
+  }
+
+function onClickLayerOrCanvas (){
+    
+    if (options.layerOrCanvas.getLabel() === 'Camada'){
+      options.layerOrCanvas.setLabel('Tela');
+     
+      options.newThumbnails = true;
+      setSubtitle();
+      options.newThumbnails = false;
+
+      return ;
+    } else {
+      options.layerOrCanvas.setLabel('Camada');
+      options.newThumbnails = true;
+      setSubtitle();
+      options.newThumbnails = false;
+      
+      return ;
+    }
+  }
+
+function setWidgets(){
+  
+  
+  var slider = ui.Slider({
+    min:1984,
+    max:2022,
+    value:options.year,
+    step:1,
+    onChange:function(value){
+      // print(value);
+      options.year = value;
+      setSubtitle();
+      
+      options.layerOrCanvas.setLabel('Tela');
+      //setThumbs();
+
+    },
+    style:styles.slider_year
+  });
+  
+  options.subtitle =  ui.Panel({
+    widgets:[ui.Label('subtitle')],
+    layout:ui.Panel.Layout.flow('vertical'),
+    style:styles.comum_panel
+  });
+
+  options.select =  ui.Panel({
+    widgets:[],
+    layout:ui.Panel.Layout.flow('horizontal'),
+    style:styles.comum_panel
+  });
+  options.subtitle_cache =  ui.Panel({
+    widgets:[],
+    layout:ui.Panel.Layout.flow('vertical'),
+    style:styles.comum_panel
+  });
+  
+  var slider_month = ui.Slider({
+    min:1,
+    max:12,
+    value:ee.Number.parse(options.month),
+    step:1,
+    onChange:function(value){
+      // print(value);
+        options.month = '' + value;
+        options.month_int =  value;
+      
+      if (value < 10){
+        options.month = '0' + value;
+      }
+      
+      if (options.month_filter === true){
+        setSubtitle();
+      }
+    },
+    // direction:,
+    disabled:options.month_filter,
+    style:styles.slider_year
+  });
+  
+  var check = ui.Checkbox({
+    label:'monthly data',
+    value:  options.month_filter || false,
+    onChange:function(value){
+      options.month_filter = value;
+      setSubtitle();
+    },
+    // disabled:,
+    style:styles.check_month_filter
+  });
+  
+  var panel_month = ui.Panel({
+    widgets:[check, slider_month],
+    layout:ui.Panel.Layout.flow('horizontal'),
+    style:styles.comum_panel
+  });
+  
+  options.panel
+    .add(options.select)
+    .add(slider)
+    .add(panel_month)
+    .add(options.subtitle)
+    .add(options.subtitle_cache);
+  
+}
+ 
+function start (){
+  print(ee.Date(Date.now()),options,dataset);
+
+  setLayout();
+
+  setWidgets();
+
+  setSelect();
+
+  setSampleGeometry();
+
+  setSubtitle();
+
+  options.openThumbs.onClick(onClickThumbs);
+
+  options.textboxDimensions.onChange(onChangeoTextboxDimensions);
+
+  options.layerOrCanvas.onClick(onClickLayerOrCanvas);
+
+  options.firstRound = false;
+  
+  print(ee.Date(Date.now()),options,dataset);
+}
+
+start();
+options.mapp.setCenter(-60.7664,-18.2121,6);
+
+//Marcos Rosa, Eduardo Rosa, Mariana Dias
+//Updated Jul 14, 2023 - MD - mariana@arcplan.com.br
