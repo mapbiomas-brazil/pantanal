@@ -80,7 +80,7 @@ var asset_mosaicos_col8_l7 = ee.ImageCollection('projects/nexgenmap/MapBiomas2/L
 var asset_mosaicos_col8_l8 = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2') 
       .filter(ee.Filter.eq('satellite','l8'))
       .filter(ee.Filter.inList('year', [
-        2013,2014,2015,2016,2017,2018,2019,2020,2021,2022
+        2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023
       ]));
 
 var asset_mosaicos_col8_l9 = ee.ImageCollection('projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2') 
