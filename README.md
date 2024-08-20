@@ -18,7 +18,7 @@ First, you need to copy these scripts to your Google Earth Engine (GEE) account.
 
 ### Pre-processing:
 
-Step01: build stable pixels from Colleciton 7.1 and save a new asset
+Step01: build stable pixels from Collecitons 6, 7.1 and 8 and save a new asset
 
 Step02: exports stable samples filtered by GEDI data
 
