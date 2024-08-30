@@ -148,7 +148,7 @@ var lista_ano = [
 //     ['l7','2012'],
 //     ['l8','2013'],['l8','2014'],['l8','2015'],['l8','2016'],['l8','2017'],
 //     ['l8','2018'],['l8','2019'],['l8','2020'],['l8','2021'],
-     ['l89','2022'],
+     ['l89','2022'], ['l89','2023'],
                 ];
 
 for (var i_grupo=0;i_grupo<lista_ano.length; i_grupo++){
@@ -402,4 +402,4 @@ Map.addLayer(classified, vis, 'Final_class_'+ano+"_"+mes, false);
 }
 
 //Marcos Rosa, Eduardo Rosa, Mariana Dias
-//Updated Jul 17, 2023 - MD - mariana@arcplan.com.br
+//Updated Jul 17, 2024 - MD - mariana@arcplan.com.br
