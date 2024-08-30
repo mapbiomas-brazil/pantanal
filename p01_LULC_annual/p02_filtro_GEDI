@@ -37,19 +37,21 @@ var geometry =
           [-58.973632404627836, -15.897400514355134],
           [-59.290155580858844, -16.315729569211467]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-// EXPORTS STABLE SAMPLES FILTERED BY GEDI DATA //
+// Set the output version for the samples
+var versao_out = '1';
 
-// set output file
-var versao_out = '2';
+// Set the output version for the stable samples
 var versao_estavel = '2';
-var dir_out = 'projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/';
 
-// biome msk
+// Define the output directory for the exported samples
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/';
+
+// Load the biomes raster image and mask it to get only the Pantanal biome
 var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41');
 var bioma250mil_PANT = biomes.mask(biomes.eq(3));
 Map.addLayer(bioma250mil_PANT);
 
-// MapBiomas vis params
+// Import the palettes module and set visualization parameters for the classification image
 var palettes = require('users/mapbiomas/modules:Palettes.js');
 var vis = {
     'min': 0,
@@ -57,75 +59,209 @@ var vis = {
     'palette': palettes.get('classification7')
 };
 
-// define collection to get stable samples
-var mapa_estavel_col71 = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/PANT_amostras_estaveis85a22_col71_v'+versao_estavel);
-Map.addLayer(mapa_estavel_col71, vis, 'mapa_estavel_col71', false);
+// Load the stable samples image from the asset
+var mapa_estavel_col8 = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/PANT_amostras_estaveis85a22_col8_v1');
+Map.addLayer(mapa_estavel_col8, vis, 'mapa_estavel_col8', false);
 
-// GEDI reference map
+// Define the regions for sampling
+var regioes = [geometry];
+
+// Load the GEDI image and mask it to the Pantanal biome
 var GEDI = ee.Image('users/potapovpeter/GEDI_V27/GEDI_SAM_v27').mask(biomes.eq(3)).rename('GEDI');
 print("GEDI",GEDI);
+
+// Set visualization parameters for the GEDI image
 var imageVisGEDI = {"min": 0,"max": 15,"palette":["c9f5f1","#ffbeee","#daffe0","#c0debf","08ff04","#037e07","0b240a"]};
 Map.addLayer(GEDI, imageVisGEDI,'GEDI', false);
 
-//define roi
-var regiao = geometry;
-  
-//generate sample points
-var training_estavel = mapa_estavel_col71.stratifiedSample({
-  'numPoints': 0,
-  'classBand': 'reference',
-  'region': regiao,
-  'classValues': [   3,   4,   12,   21,   33],
-  'classPoints': [4000,7000, 3000, 3000, 3000],
-  'scale': 30, 
-  'seed': 1, 
-  'geometries': true
-});
-  //Map.addLayer(training_estavel)
-  //print(training_estavel.size())
-  
-//points filtering by GEDI classes
-GEDI = GEDI.clip(regiao).rename('GEDI');
+// Loop through each region
+for (var id in regioes){
+  // Get the region ID
+  var reg_id = parseInt(id) + 1;
+  print(reg_id);
 
-var am_flo = training_estavel.filterMetadata('reference','equals',3);
-var am_flo_gedi = GEDI.sampleRegions({"collection": am_flo, "properties": ['reference'], "scale": 30, "geometries": true});
-am_flo_gedi = am_flo_gedi.filterMetadata('GEDI','greater_than',7);
-print('am_flo_gedi',am_flo_gedi.size());
- // Map.addLayer(am_flo, {},'am_flo', false);
- // Map.addLayer(am_flo_gedi, {},'am_flo_gedi', false);
+  // Get the current region
+  var regiao = regioes[id];
 
-var am_sav = training_estavel.filterMetadata('reference','equals',4);
-var am_sav_gedi = GEDI.sampleRegions({"collection": am_sav, "properties": ['reference'], "scale": 30, "geometries": true});
-am_sav_gedi = am_sav_gedi.filterMetadata('GEDI','greater_than',3).filterMetadata('GEDI','less_than',6);
-print('am_sav_gedi',am_sav_gedi.size());
- // Map.addLayer(am_sav, {},'am_sav', false);
- // Map.addLayer(am_sav_gedi, {},'am_sav_gedi', false);
+  // Stratified sample the stable samples image based on the region and class values
+  var training_estavel = mapa_estavel_col8.stratifiedSample({
+    'numPoints': 0,
+    'classBand': 'reference',
+    'region': regiao,
+    'classValues': [   3,   4,   12,   21,   33],
+    'classPoints': [4000,8000, 4000, 4000, 4000],
+    'scale': 30, 
+    'seed': 1, 
+    'geometries': true
+  });
 
-var am_cam = training_estavel.filterMetadata('reference','equals',12);
-var am_cam_gedi = GEDI.sampleRegions({"collection": am_cam, "properties": ['reference'], "scale": 30, "geometries": true});
-am_cam_gedi = am_cam_gedi.filterMetadata('GEDI','less_than',2);
-print('am_cam_gedi',am_cam_gedi.size());
- // Map.addLayer(am_cam, {},'am_cam', false);
- // Map.addLayer(am_cam_gedi, {},'am_cam_gedi', false);
+  // Clip the GEDI image to the current region
+  GEDI = GEDI.clip(regiao).rename('GEDI');
 
-var am_agr = training_estavel.filterMetadata('reference','equals',21);
-var am_agr_gedi = GEDI.sampleRegions({"collection": am_agr, "properties": ['reference'], "scale": 30, "geometries": true});
-am_agr_gedi = am_agr_gedi.filterMetadata('GEDI','less_than',2);
-print('am_agr_gedi',am_agr_gedi.size());
- // Map.addLayer(am_agr, {},'am_agr', false);
- // Map.addLayer(am_agr_gedi, {},'am_agr_gedi', false);
+  // Filter the stable samples based on the reference class
+  var am_flo = training_estavel.filterMetadata('reference','equals',3);
+  var am_sav = training_estavel.filterMetadata('reference','equals',4);
+  var am_cam = training_estavel.filterMetadata('reference','equals',12);
+  var am_agr = training_estavel.filterMetadata('reference','equals',21);
+  var am_agu = training_estavel.filterMetadata('reference','equals',33);
 
-var am_agu = training_estavel.filterMetadata('reference','equals',33);
-var am_agu_gedi = GEDI.sampleRegions({"collection": am_agu, "properties": ['reference'], "scale": 30, "geometries": true});
-am_agu_gedi = am_agu_gedi.filterMetadata('GEDI','less_than',1);
-print('am_agu_gedi',am_agu_gedi.size());
- // Map.addLayer(am_agu, {},'am_agu', false);
- // Map.addLayer(am_agu_gedi, {},'am_agu_gedi', false);
+  // Sample the GEDI image based on the filtered stable samples
+  var am_flo_gedi = GEDI.sampleRegions({"collection": am_flo, "properties": ['reference'], "scale": 30, "geometries": true});
+  var am_sav_gedi = GEDI.sampleRegions({"collection": am_sav, "properties": ['reference'], "scale": 30, "geometries": true});
+  var am_cam_gedi = GEDI.sampleRegions({"collection": am_cam, "properties": ['reference'], "scale": 30, "geometries": true});
+  var am_agr_gedi = GEDI.sampleRegions({"collection": am_agr, "properties": ['reference'], "scale": 30, "geometries": true});
+  var am_agu_gedi = GEDI.sampleRegions({"collection": am_agu, "properties": ['reference'], "scale": 30, "geometries": true});
 
-var amostras_final = am_flo_gedi.merge(am_sav_gedi).merge(am_cam_gedi).merge(am_agr_gedi).merge(am_agu_gedi);
+  // Filter the sampled GEDI points based on the GEDI values
+  am_flo_gedi = am_flo_gedi.filterMetadata('GEDI','greater_than',6);
+  am_sav_gedi = am_sav_gedi.filterMetadata('GEDI','greater_than',2).filterMetadata('GEDI','less_than',6);
+  am_cam_gedi = am_cam_gedi.filterMetadata('GEDI','less_than',2);
+  am_agr_gedi = am_agr_gedi.filterMetadata('GEDI','less_than',2);
+  am_agu_gedi = am_agu_gedi.filterMetadata('GEDI','less_than',1);
 
-// export the points to be trained
-Export.table.toAsset(amostras_final, 'samples_stable_r1_v'+versao_out, dir_out+ 'samples_stable_r_v'+versao_out);
+  // Print the size of each filtered sample collection
+  print('am_flo_gedi',am_flo_gedi.size());
+  print('am_sav_gedi',am_sav_gedi.size());
+  print('am_cam_gedi',am_cam_gedi.size());
+  print('am_agr_gedi',am_agr_gedi.size());
+  print('am_agu_gedi',am_agu_gedi.size());
 
+  // Add the filtered samples to the map for visualization
+  Map.addLayer(am_flo, {},'am_flo', false);
+  Map.addLayer(am_flo_gedi, {},'am_flo_gedi', false);
+  Map.addLayer(am_sav, {},'am_sav', false);
+  Map.addLayer(am_sav_gedi, {},'am_sav_gedi', false);
+  Map.addLayer(am_agu, {},'am_agu', false);
+  Map.addLayer(am_agu_gedi, {},'am_agu_gedi', false);
+
+  // Merge the filtered samples into a single collection
+  var amostras_final = am_flo_gedi.merge(am_sav_gedi).merge(am_cam_gedi).merge(am_agr_gedi).merge(am_agu_gedi);
+
+  // Export the final samples to an asset
+  Export.table.toAsset(amostras_final, 'samples_stable_r'+reg_id+'_v'+versao_out, dirout+ 'samples_stable_r'+reg_id+'_v'+versao_out);
+}
+
+
+// stable samples through colections
+
+// Set the output version for the samples
+var versao_out = '1';
+
+// Set the output version for the stable samples
+var versao_estavel = '2';
+
+// Define the output directory for the exported samples
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/';
+
+// Load the biomes raster image and mask it to get only the Pantanal biome
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41');
+var bioma250mil_PANT = biomes.mask(biomes.eq(3));
+Map.addLayer(bioma250mil_PANT);
+
+// Import the palettes module and set visualization parameters for the classification image
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 62,
+    'palette': palettes.get('classification7')
+};
+
+// Load the stable samples image from the asset
+var mapa_estavel_col8 = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/PANT_amostras_estaveis85a22_col8_v1');
+Map.addLayer(mapa_estavel_col8, vis, 'mapa_estavel_col8', false);
+
+// Define the regions for sampling
+var regioes = [geometry];
+// var regioes = [col6_r1];
+
+// Load the GEDI image and mask it to the Pantanal biome
+var GEDI = ee.Image('users/potapovpeter/GEDI_V27/GEDI_SAM_v27').mask(biomes.eq(3)).rename('GEDI');
+print("GEDI",GEDI);
+
+// Set visualization parameters for the GEDI image
+var imageVisGEDI = {"min": 0,"max": 15,"palette":["c9f5f1","#ffbeee","#daffe0","#c0debf","08ff04","#037e07","0b240a"]};
+Map.addLayer(GEDI, imageVisGEDI,'GEDI', false);
+
+// Define the list of years for the analysis
+var anos = ['1985','1986','1987','1988','1989','1990','1991','1992','1993','1994','1995','1996','1997','1998','1999','2000','2001','2002','2003','2004','2005','2006','2007',
+            '2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020'];
+
+// Loop through each region
+for (var id in regioes){
+  // Get the region ID
+  var reg_id = parseInt(id) + 1;
+  print(reg_id);
+
+  // Get the current region
+  var regiao = regioes[id];
+
+  // Loop through each year
+  for (var i_ano=0;i_ano<anos.length; i_ano++){
+    // Get the current year
+    var ano = anos[i_ano];
+
+    // Load the stable samples image for the current year
+    var imagem = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/PANT_amostras_estaveis_col678_v1').select('classification_'+ano).rename('reference');
+
+    // Stratified sample the stable samples image based on the region and class values
+    var training_estavel = imagem.stratifiedSample({
+      'numPoints': 0,
+      'classBand': 'reference',
+      'region': regiao,
+      'classValues': [   3,   4,   12,   21,   33],
+      'classPoints': [4000,8000, 4000, 4000, 4000],
+      'scale': 30, 
+      'seed': 1, 
+      'geometries': true
+    });
+
+    // Clip the GEDI image to the current region
+    GEDI = GEDI.clip(regiao).rename('GEDI');
+
+    // Filter the stable samples based on the reference class
+    var am_flo = training_estavel.filterMetadata('reference','equals',3);
+    var am_sav = training_estavel.filterMetadata('reference','equals',4);
+    var am_cam = training_estavel.filterMetadata('reference','equals',12);
+    var am_agr = training_estavel.filterMetadata('reference','equals',21);
+    var am_agu = training_estavel.filterMetadata('reference','equals',33);
+
+    // Sample the GEDI image based on the filtered stable samples
+    var am_flo_gedi = GEDI.sampleRegions({"collection": am_flo, "properties": ['reference'], "scale": 30, "geometries": true});
+    var am_sav_gedi = GEDI.sampleRegions({"collection": am_sav, "properties": ['reference'], "scale": 30, "geometries": true});
+    var am_cam_gedi = GEDI.sampleRegions({"collection": am_cam, "properties": ['reference'], "scale": 30, "geometries": true});
+    var am_agr_gedi = GEDI.sampleRegions({"collection": am_agr, "properties": ['reference'], "scale": 30, "geometries": true});
+    var am_agu_gedi = GEDI.sampleRegions({"collection": am_agu, "properties": ['reference'], "scale": 30, "geometries": true});
+
+    // Filter the sampled GEDI points based on the GEDI values
+    am_flo_gedi = am_flo_gedi.filterMetadata('GEDI','greater_than',6);
+    am_sav_gedi = am_sav_gedi.filterMetadata('GEDI','greater_than',2).filterMetadata('GEDI','less_than',6);
+    am_cam_gedi = am_cam_gedi.filterMetadata('GEDI','less_than',2);
+    am_agr_gedi = am_agr_gedi.filterMetadata('GEDI','less_than',2);
+    am_agu_gedi = am_agu_gedi.filterMetadata('GEDI','less_than',1);
+
+    // Print the size of each filtered sample collection
+    print('am_flo_gedi '+ano,am_flo_gedi.size());
+    print('am_sav_gedi '+ano,am_sav_gedi.size());
+    print('am_cam_gedi '+ano,am_cam_gedi.size());
+    print('am_agr_gedi '+ano,am_agr_gedi.size());
+    print('am_agu_gedi '+ano,am_agu_gedi.size());
+
+    // Add the filtered samples to the map for visualization
+    Map.addLayer(am_flo, {},'am_flo '+ano, false);
+    Map.addLayer(am_flo_gedi, {},'am_flo_gedi '+ano, false);
+    Map.addLayer(am_sav, {},'am_sav '+ano, false);
+    Map.addLayer(am_sav_gedi, {},'am_sav_gedi '+ano, false);
+    Map.addLayer(am_agu, {},'am_agu '+ano, false);
+    Map.addLayer(am_agu_gedi, {},'am_agu_gedi '+ano, false);
+
+    // Merge the filtered samples into a single collection
+    var amostras_final = am_flo_gedi.merge(am_sav_gedi).merge(am_cam_gedi).merge(am_agr_gedi).merge(am_agu_gedi);
+
+    // Export the final samples to an asset
+    Export.table.toAsset(amostras_final, 'samples_stable678_r'+reg_id+'_v'+versao_out+'_'+ano, dirout+ 'samples_stable678_r'+reg_id+'_v'+versao_out+'_'+ano);
+  }
+}
+
+//Developed by ArcPlan Team
 //Marcos Rosa, Eduardo Rosa, Mariana Dias
-//Updated Jul 12, 2023 - MD - mariana@arcplan.com.br
+//Updated July 2024 - MD - mariana@arcplan.com.br

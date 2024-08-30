@@ -37,40 +37,39 @@ var geometry =
           [-58.973632404627836, -15.897400514355134],
           [-59.290155580858844, -16.315729569211467]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-// GAP FILL FILTER TO REMOVE NON OBSERVED DATA //
+// Define a variable to control whether to use eight-connected component analysis
+var VeightConnected = true
 
-// set output file
-var vesion_in = '4';
-var version_out = '6';
-var descricao = 'GAP fill and firts years corrections';
-var col = 8.0;
-var prefixo_in = 'PANT_col8_Anual_p09_v';
-var prefixo_out = 'PANT_col8_Anual_p10a_v';
-var dirout = 'projects/mapbiomas-workspace/COLECAO8/classificacao-pantanal/';
-
-//set auxiliar variables and asset
-var ano = 1987;
+// Define the year and biome for processing test
+var ano = 1987
 var bioma = "PANTANAL";
-var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41');
-var bioma250mil_PANT = biomes.mask(biomes.eq(3));
-var image = ee.Image('projects/mapbiomas-workspace/COLECAO8/classificacao-pantanal/PANT_col8_Anual_p08b_v4');
-var asset_mosaicos_col8 = 'projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2';
+
+// Load the biomes image and mask it to the Pantanal biome
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41')
+var bioma250mil_PANT = biomes.mask(biomes.eq(3))
+
+// Load the Collection 9 classification image
+var image = ee.Image('projects/mapbiomas-workspace/COLECAO9/classificacao-pantanal/PANT_col9_Anual_p02b_v02')//.mask(bioma250mil_PANT)
 
 ////*************************************************************
 // Do not Change from these lines
 ////*************************************************************
 
-var VeightConnected = true;
-
+// Load the palettes module and define visualization parameters
 var palettes = require('users/mapbiomas/modules:Palettes.js');
 var vis = {
     'min': 0,
-    'max': 62,
-    'palette': palettes.get('classification7')
+    'max': 45,
+    'palette': palettes.get('classification5')
 };
 
-image = image.mask(image.neq(0));
+// Mask the image to remove pixels with value 0
+image = image.mask(image.neq(0))
+
+// Print the image
 // print(image)
+
+// Define the list of years for processing
 var years = [
     1985, 1986, 1987, 1988,
     1989, 1990, 1991, 1992,
@@ -80,58 +79,70 @@ var years = [
     2005, 2006, 2007, 2008,
     2009, 2010, 2011, 2012,
     2013, 2014, 2015, 2016,
-    2017, 2018, 2019, 2020,2021,2022];
+    2017, 2018, 2019, 2020,2021,2022,2023];
 
 /**
  * User defined functions
  */
+
+// Define a function to apply gap filling
 var applyGapFill = function (image) {
 
-    // apply the gap fill form t0 until tn
+    // Apply gap filling from t0 to tn
     var imageFilledt0tn = bandNames.slice(1)
         .iterate(
             function (bandName, previousImage) {
 
+                // Select the current band
                 var currentImage = image.select(ee.String(bandName));
 
+                // Cast the previous image to an Image
                 previousImage = ee.Image(previousImage);
 
+                // Unmask the current image using the previous image
                 currentImage = currentImage.unmask(
                     previousImage.select([0]));
 
+                // Add the current image to the previous image
                 return currentImage.addBands(previousImage);
 
             }, ee.Image(imageAllBands.select([bandNames.get(0)]))
         );
 
+    // Cast the image to an Image
     imageFilledt0tn = ee.Image(imageFilledt0tn);
 
-    // apply the gap fill form tn until t0
+    // Apply gap filling from tn to t0
     var bandNamesReversed = bandNames.reverse();
 
     var imageFilledtnt0 = bandNamesReversed.slice(1)
         .iterate(
             function (bandName, previousImage) {
 
+                // Select the current band
                 var currentImage = imageFilledt0tn.select(ee.String(bandName));
 
+                // Cast the previous image to an Image
                 previousImage = ee.Image(previousImage);
 
+                // Unmask the current image using the last band of the previous image
                 currentImage = currentImage.unmask(
                     previousImage.select(previousImage.bandNames().length().subtract(1)));
 
+                // Add the current image to the previous image
                 return previousImage.addBands(currentImage);
 
             }, ee.Image(imageFilledt0tn.select([bandNamesReversed.get(0)]))
         );
 
-
+    // Cast the image to an Image and select the desired bands
     imageFilledtnt0 = ee.Image(imageFilledtnt0).select(bandNames);
 
+    // Return the gap-filled image
     return imageFilledtnt0;
 };
 
-// get band names list 
+// Get the band names list
 var bandNames = ee.List(
     years.map(
         function (year) {
@@ -139,14 +150,16 @@ var bandNames = ee.List(
         }
     )
 );
-// generate a histogram dictionary of [bandNames, image.bandNames()]
+
+// Generate a histogram dictionary of [bandNames, image.bandNames()]
 var bandsOccurrence = ee.Dictionary(
     bandNames.cat(image.bandNames()).reduce(ee.Reducer.frequencyHistogram())
 );
 
+// Print the histogram dictionary
 print(bandsOccurrence);
 
-// insert a masked band 
+// Create a dictionary of images, masking bands with occurrence 2
 var bandsDictionary = bandsOccurrence.map(
     function (key, value) {
         return ee.Image(
@@ -159,7 +172,7 @@ var bandsDictionary = bandsOccurrence.map(
     }
 );
 
-// convert dictionary to image
+// Convert the dictionary to an image
 var imageAllBands = ee.Image(
     bandNames.iterate(
         function (band, image) {
@@ -169,124 +182,62 @@ var imageAllBands = ee.Image(
     )
 );
 
-// generate image pixel years
+// Generate an image of pixel years
 var imagePixelYear = ee.Image.constant(years)
     .updateMask(imageAllBands)
     .rename(bandNames);
 
-// apply the gap fill
+// Apply gap filling
 var imageFilledtnt0 = applyGapFill(imageAllBands);
-//
 
+// Mask the gap-filled image to the Pantanal biome
+//imageFilledtnt0 = imageFilledtnt0.mask(bioma250mil_PANT)
+
+// Display the original image
 Map.addLayer(image.select('classification_'+ano), vis, 'image',false);
+
+// Display the gap-filled image
 Map.addLayer(imageFilledtnt0.select('classification_'+ano), vis, 'filtered');
+
+
+// Print the gap-filled image
 print(imageFilledtnt0);
 
-// CORRECTIONS ON LANDSAT 5 CLASSIFICATION NOISE //
+// Define variables for exporting the image
+var vesion_in = '1'
+var version_out = 'p02c_v02';
+var descricao = 'GAP fill'
+var col = 9.0
+var prefixo_in = 'PANT_col9_Anual_'
+var prefixo_out = 'PANT_col9_Anual_'
+var dirout = 'projects/mapbiomas-workspace/COLECAO9/classificacao-pantanal/';
 
-// years with problems on mosaic:
- var anos = [
-            1985, 1987,
-            1990,1993,
-            1995,1998
-            ];
-var col8 = imageFilledtnt0
-
-for (var i_ano=0;i_ano<anos.length; i_ano++){
-  var ano = anos[i_ano];
-
-var to_mask_anodepois_sav = col8.select(['classification_'+(ano+1)]).eq(4).remap([1],[100],0).toByte().selfMask();  
-
- var class_corr_sav_ano = col8.select('classification_'+ano).add(to_mask_anodepois_sav)
-                         .remap([3,4,12,21,22,25,33,103,104,112,121,122,125,133],
-                                [3,4,12,21,22,25,33, 3,  4, 4, 4, 22, 25, 33]);
-
-var corrigidosavana_ano = col8.select('classification_'+ano).blend(class_corr_sav_ano.rename('classification_'+ano));
-
-var to_mask_anodepois_flo = col8.select(['classification_'+(ano+1)]).eq(3).remap([1],[100],0).toByte().selfMask();  
-
- var class_corr_flo_ano = col8.select('classification_'+ano).add(to_mask_anodepois_flo)
-                         .remap([3,4,12,21,22,25,33,103,104,112,121,122,125,133],
-                                [3,4,12,21,22,25,33, 3, 3 , 3, 3, 22, 25, 33]);
-
-var corrigidofloresta_ano = col8.select('classification_'+ano).blend(class_corr_flo_ano.rename('classification_'+ano));
-
-
-var to_mask_anodepois_camp = col8.select(['classification_'+(ano+1)]).eq(12).remap([1],[100],0).toByte().selfMask();  
-
- var class_corr_camp_ano = col8.select('classification_'+ano).add(to_mask_anodepois_camp)
-                         .remap([3,4,12,21,22,25,33,103,104,112,121,122,125,133],
-                                [3,4,12,21,22,25,33,  3,  4 , 12, 12, 22, 25, 33]);
-
-var corrigidocampestre_ano = col8.select('classification_'+ano).blend(class_corr_camp_ano.rename('classification_'+ano));
-
-
-var corrigidoano = col8.select('classification_'+ano).blend(class_corr_camp_ano.rename('classification_'+ano)
-                    .blend(class_corr_sav_ano.rename('classification_'+ano).blend(class_corr_flo_ano.rename('classification_'+ano))));
-
-print('final '+ano,corrigidoano);
-
-
-  var mosaicoTotal = ee.ImageCollection(asset_mosaicos_col8)
-                        .filterMetadata('biome', 'equals', 'PANTANAL')
-                        .filterMetadata('year', 'equals', ano)
-                        .mosaic();
-
-Map.addLayer(mosaicoTotal, {bands: ['swir1_median', 'nir_median', 'red_median'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico '+ano,false); 
-Map.addLayer(col8.select(['classification_'+ano]),vis,'Original '+ano,false);
-
-Map.addLayer(class_corr_sav_ano,vis,'mascara savana '+ano,false);
-Map.addLayer(class_corr_flo_ano,vis,'mascara floresta '+ano,false);
-Map.addLayer(class_corr_camp_ano,vis,'mascara campestre '+ano,false);
-
-Map.addLayer(corrigidoano.select(['classification_'+ano]),vis,'Corrigido '+ano,false);
-
-Map.addLayer(col8.select('classification_'+(ano+1)),vis,'Original '+(ano+1),false);
-
- if (i_ano === 0){ var corrigido = corrigidoano}  
-  else {corrigido = corrigido.addBands(corrigidoano); }
-}
-
-print(corrigido);
-
-var bandNames =  ['classification_1986','classification_1988','classification_1989',
-                  'classification_1991','classification_1992','classification_1994',
-                  'classification_1996','classification_1997','classification_1999',
-                  'classification_2000','classification_2001','classification_2002',
-                  'classification_2003','classification_2004','classification_2005',
-                  'classification_2006','classification_2007','classification_2008',
-                  'classification_2009','classification_2010','classification_2011',
-                  'classification_2012','classification_2013','classification_2014',
-                  'classification_2015','classification_2016','classification_2017',
-                  'classification_2018','classification_2019','classification_2020',
-                  'classification_2021','classification_2022'];
-
-var exportar = col8.select(bandNames).addBands(corrigido).toByte();
-
-//set outuput file
-exportar = exportar
+// Set metadata for the classified image
+imageFilledtnt0 = imageFilledtnt0.toInt8()
 .set('territory', 'PANTANAL')
 .set('biome', 'PANTANAL')
 .set('source', 'arcplan')
 .set('version', version_out)
 .set('year', version_out)
 .set('collection_id', col)
-.set('description', descricao);
+.set('description', descricao)
 
-print('Final exportação:',exportar);
+// Print the gap-filled image
+print(imageFilledtnt0)
 
-// export classification
+// Export the gap-filled image to an asset
 Export.image.toAsset({
-  "image": exportar,
-  "description": prefixo_out+version_out,
-  "assetId": dirout + prefixo_out+version_out,
-  "scale": 30,
-  "pyramidingPolicy": {
-      '.default': 'mode'
-  },
-  "maxPixels": 1e13,
-  "region": geometry
-});    
-  
+    "image": imageFilledtnt0,
+    "description": prefixo_out+version_out,
+    "assetId": dirout + prefixo_out+version_out,
+    "scale": 30,
+    "pyramidingPolicy": {
+        '.default': 'mode'
+    },
+    "maxPixels": 1e13,
+    "region": geometry
+  });    
+
+//Developed by ArcPlan Team
 //Marcos Rosa, Eduardo Rosa, Mariana Dias
-//Updated Jul 13, 2023 - MD - mariana@arcplan.com.br
+//Updated July 2024 - MD - mariana@arcplan.com.br

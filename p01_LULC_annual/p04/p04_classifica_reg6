@@ -1777,10 +1777,7 @@ var geometry =
               "reference": 4,
               "system:index": "95"
             })]),
-    campo = 
-    /* color: #ffb568 */
-    /* shown: false */
-    ee.FeatureCollection(
+    campo = /* color: #ffb568 */ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
                 [[[-57.3878547913157, -19.709630314074783],
@@ -1896,151 +1893,12 @@ var geometry =
             }),
         ee.Feature(
             ee.Geometry.Polygon(
-                [[[-55.59812146322824, -16.43247079931945],
-                  [-55.61288434164621, -16.423250199364492],
-                  [-55.61288434164621, -16.429177778132598],
-                  [-55.6015546907673, -16.435434470662777]]]),
-            {
-              "reference": 12,
-              "system:index": "12"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-55.572715579439176, -16.409418479372043],
-                  [-55.59159833090402, -16.396903218636027],
-                  [-55.587478457857145, -16.407771780519788],
-                  [-55.57992535727121, -16.41106516428698]]]),
-            {
-              "reference": 12,
-              "system:index": "13"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-55.931831180025114, -16.575334003386985],
-                  [-55.94419079916574, -16.575004946965684],
-                  [-55.933547793794645, -16.58158596850724]]]),
-            {
-              "reference": 12,
-              "system:index": "14"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-55.947280703950895, -16.540121778446977],
-                  [-55.94384747641183, -16.535843219501672],
-                  [-55.94968396322824, -16.53617234278864]]]),
-            {
-              "reference": 12,
-              "system:index": "15"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-55.92324811117746, -16.528273229002156],
-                  [-55.921531497407926, -16.52037379203669],
-                  [-55.92874127523996, -16.52201953471546]]]),
-            {
-              "reference": 12,
-              "system:index": "16"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-55.954490481782926, -16.51280319514403],
-                  [-55.9586103548298, -16.518398882314663],
-                  [-55.95414715902902, -16.525640119249022]]]),
-            {
-              "reference": 12,
-              "system:index": "17"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-55.40311413900949, -16.46572718269304],
-                  [-55.38938122885324, -16.469019583734205],
-                  [-55.388007937837614, -16.461117727293544]]]),
-            {
-              "reference": 12,
-              "system:index": "18"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-55.415473758150114, -16.45453260093758],
-                  [-55.412727176118864, -16.445313048507362],
-                  [-55.423713504243864, -16.447288703758694]]]),
-            {
-              "reference": 12,
-              "system:index": "19"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-58.14542763327771, -17.093980768854507],
-                  [-58.14748756980115, -17.08741753139758],
-                  [-58.148860860816775, -17.09660599910697],
-                  [-58.147830892555056, -17.103168912868657]]]),
-            {
-              "reference": 12,
-              "system:index": "20"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-58.08877937888318, -17.093652612471903],
-                  [-58.09461586569959, -17.086761194939147],
-                  [-58.097705770484744, -17.09430892465913],
-                  [-58.09427254294568, -17.103825191524365]]]),
-            {
-              "reference": 12,
-              "system:index": "21"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-58.070926595680056, -17.112356603526123],
-                  [-58.07676308249646, -17.10940346669775],
-                  [-58.079166341773806, -17.115309693493263]]]),
-            {
-              "reference": 12,
-              "system:index": "22"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-57.50671769569445, -19.52570972424282],
-                  [-57.51118089149523, -19.52376823968662],
-                  [-57.50637437294054, -19.530886902331467]]]),
-            {
-              "reference": 12,
-              "system:index": "23"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-57.28432464507808, -19.176312603638696],
-                  [-57.28226470855464, -19.16917845316394],
-                  [-57.29050445464839, -19.171124161196815]]]),
-            {
-              "reference": 12,
-              "system:index": "24"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-57.50679778960933, -19.57662307836501],
-                  [-57.513664244687455, -19.57662307836501],
-                  [-57.505424498593705, -19.581798622766794]]]),
-            {
-              "reference": 12,
-              "system:index": "25"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
-                [[[-57.31453704742183, -19.318282628823745],
-                  [-57.31110381988277, -19.311802658047576],
-                  [-57.31659698394527, -19.311802658047576]]]),
-            {
-              "reference": 12,
-              "system:index": "26"
-            }),
-        ee.Feature(
-            ee.Geometry.Polygon(
                 [[[-57.59120886443944, -17.89088025777238],
                   [-57.59567206024022, -17.890226814963192],
                   [-57.59017889617772, -17.895127577389296]]]),
             {
               "reference": 12,
-              "system:index": "27"
+              "system:index": "12"
             }),
         ee.Feature(
             ee.Geometry.Polygon(
@@ -2049,7 +1907,95 @@ var geometry =
                   [-57.575759340513656, -17.877484199449537]]]),
             {
               "reference": 12,
-              "system:index": "28"
+              "system:index": "13"
+            }),
+        ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-57.43252359839051, -19.604602092248484],
+                  [-57.443166603761604, -19.631767119933617],
+                  [-57.387204994874885, -19.673152613308186],
+                  [-57.35664926977723, -19.645671249748787]]]),
+            {
+              "reference": 12,
+              "system:index": "14"
+            }),
+        ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-57.17537485571473, -19.53893434386117],
+                  [-57.165761818605354, -19.558669828736925],
+                  [-57.15958200903504, -19.56028738438041],
+                  [-57.156492104249885, -19.55025827788385],
+                  [-57.168508400636604, -19.55122886382799]]]),
+            {
+              "reference": 12,
+              "system:index": "15"
+            }),
+        ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-57.9843649086043, -19.807760897169402],
+                  [-57.928059976963674, -19.7521934793881],
+                  [-57.928746622471486, -19.728926949510605],
+                  [-57.980931681065236, -19.73732914305101],
+                  [-58.005650919346486, -19.749608476851602],
+                  [-58.02556363907305, -19.794839971721974],
+                  [-57.99809781876055, -19.812282973183354]]]),
+            {
+              "reference": 12,
+              "system:index": "16"
+            }),
+        ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-58.137153096268314, -19.935639325382578],
+                  [-58.119986958573, -19.909171645587744],
+                  [-58.143332905838626, -19.902715441890333],
+                  [-58.148139424393314, -19.926602079328674]]]),
+            {
+              "reference": 12,
+              "system:index": "17"
+            }),
+        ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-56.698468999482046, -19.705559159830067],
+                  [-56.71391852340783, -19.713316180442895],
+                  [-56.71460516891564, -19.717194549652426],
+                  [-56.696752385712514, -19.711376960561015],
+                  [-56.68954260788048, -19.708791297472494]]]),
+            {
+              "reference": 12,
+              "system:index": "18"
+            }),
+        ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-56.819318608857046, -19.67517387512455],
+                  [-56.817601995087514, -19.680669513273013],
+                  [-56.80627234420861, -19.685195191365302],
+                  [-56.805585698700796, -19.680346245659166],
+                  [-56.81245215377892, -19.67194105875159],
+                  [-56.81828864059533, -19.67291091051108]]]),
+            {
+              "reference": 12,
+              "system:index": "19"
+            }),
+        ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-56.83270819625939, -19.72010326481696],
+                  [-56.8224085136422, -19.71848731848186],
+                  [-56.82412512741173, -19.703296624623526],
+                  [-56.84369452438439, -19.701034057420767]]]),
+            {
+              "reference": 12,
+              "system:index": "20"
+            }),
+        ee.Feature(
+            ee.Geometry.Polygon(
+                [[[-56.8608606620797, -19.654482723712036],
+                  [-56.86017401657189, -19.660302379922904],
+                  [-56.84747107467736, -19.668061593025758],
+                  [-56.84335120163048, -19.66709171192355],
+                  [-56.852277593232046, -19.658685829934182]]]),
+            {
+              "reference": 12,
+              "system:index": "21"
             })]),
     floresta = 
     /* color: #07561c */
@@ -2671,7 +2617,10 @@ var geometry =
               "reference": 3,
               "system:index": "61"
             })]),
-    agro = /* color: #ffc82d */ee.FeatureCollection(
+    agro = 
+    /* color: #ffc82d */
+    /* shown: false */
+    ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
                 [[[-55.96971268778236, -20.081805621216144],
@@ -10050,7 +9999,10 @@ var geometry =
       ],
       "coordinates": []
     }),
-    agri_85 = /* color: #d63000 */ee.FeatureCollection(
+    agri_85 = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
                 [[[-56.652815107958126, -20.059422581802956],
@@ -10154,7 +10106,10 @@ var geometry =
               "reference": 19,
               "system:index": "10"
             })]),
-    agri_95 = /* color: #98ff00 */ee.FeatureCollection(
+    agri_95 = 
+    /* color: #98ff00 */
+    /* shown: false */
+    ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
                 [[[-58.02056194714654, -15.957637008164935],
@@ -10445,7 +10400,10 @@ var geometry =
               "reference": 19,
               "system:index": "31"
             })]),
-    agri_05 = /* color: #0b4a8b */ee.FeatureCollection(
+    agri_05 = 
+    /* color: #0b4a8b */
+    /* shown: false */
+    ee.FeatureCollection(
         [ee.Feature(
             ee.Geometry.Polygon(
                 [[[-56.69219864256895, -20.110322332361296],
@@ -10727,69 +10685,121 @@ var geometry =
             {
               "reference": 19,
               "system:index": "30"
-            })]);
+            })]),
+    exporta_regiao06 = 
+    /* color: #29d68c */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.38875578031082, -19.37078714255447],
+          [-57.50960538968582, -19.552063168006587],
+          [-57.52608488187332, -19.70210924316828],
+          [-57.12508390531082, -19.80033912547354],
+          [-57.00423429593582, -19.944988433224214],
+          [-57.04817960843582, -20.099822892817812],
+          [-57.04268644437332, -20.26481102194672],
+          [-57.04268644437332, -20.40388350735062],
+          [-56.94380949124832, -20.609686012524946],
+          [-56.91634367093582, -20.72789688670232],
+          [-56.89162443265457, -20.70734508631424],
+          [-56.82845304593582, -20.447639655510972],
+          [-55.68038175687332, -20.470799634014217],
+          [-55.52646984503349, -20.270253009193336],
+          [-55.48527111456474, -20.198094720642676],
+          [-55.62534679815849, -20.22386938281372],
+          [-55.79014172003349, -20.200672378918817],
+          [-55.99338879034599, -19.79546043998287],
+          [-56.08951916143974, -19.666194096454213],
+          [-56.53446545050224, -19.55494159041587],
+          [-56.99589123175224, -19.433252197544984],
+          [-57.23759045050224, -19.40475850583491],
+          [-57.28428234503349, -19.36589542745082]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-// RANDOM FOREST CLASSIFICATION //
-        //  REGION 6  //
-
-// set output file
-var region = '6';
-var version_out = '2';
-var dir_out = 'projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/';
-
-// biome msk
-var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41');
-var bioma250mil_PANT = biomes.mask(biomes.eq(3));
-Map.addLayer(bioma250mil_PANT,{},'Bioma',false);
-var limite = geometry;
-
-// sampling tools
+// Define variables for collection and printing options
 var coleta = false;
 var printa_corretos = false;
 var add_errados = false;
-var lista_anos = [2021];
 
-// set samples asset
-var dirsamples = 'projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/';
-var versao_samples = 1;
+// Define feature collections for different regions and sub-regions
+var sub_bac = ee.FeatureCollection('users/gee_arcplan/col7/SUBBACIAS_pantanal')
+var sub_reg = ee.FeatureCollection('users/gee_arcplan/col7/sub_reg_pantanal')
+var sistDep = ee.FeatureCollection('users/gee_arcplan/sist_dep_pantanal')
+var altoParaguai = sub_bac.filter(ee.Filter.eq('name', 'Alto Paraguai'))
+var taquari = sub_bac.filter(ee.Filter.eq('name', 'Taquari'))
+var megaLeque = sistDep.filter(ee.Filter.eq('Nivel_1','Megaleque do Taquari'))
+var baixoParaguai = sub_bac.filter(ee.Filter.eq('name', 'Baixo Paraguai'))
+var caceres = sub_reg.filter(ee.Filter.eq('SPRCLASSE', 'Cáceres'))
+var barao = sub_reg.filter(ee.Filter.eq('SPRCLASSE', 'Barão de Melgaço'))
+var pocone = sub_reg.filter(ee.Filter.eq('SPRCLASSE', 'Poconé'))
+var taquari_edit = ee.FeatureCollection('users/gee_arcplan/col7/taquari_editado')  
 
-// nº trees
-var RFtrees = 200;
+// Define feature collection for Miranda region
+var miranda = ee.FeatureCollection('users/gee_arcplan/micro_reg_hidr_miranda')
+
+// Define a list of years for processing
+var lista_anos = [1988,1990,2000,2010,2020,2021,2022,2023]
+
+// Define the geometry, biome, region, version, and output directories
+var limite = geometry
+var bioma = 'PANTANAL'
+
+var region = '6'
+var version_out = '2';
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/';
+
+// Define the sample directory and version
+var dirsamples = 'projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/';
+var versao_samples = 1
+
+// Define the number of trees for the random forest classifier
+var RFtrees = 200
 if (coleta) {var RFtrees = 20}
 
-// auxiliar assets
-var asset_col7 = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2');
-var asset_col71 = ee.Image('projects/mapbiomas-workspace/public/collection7_1/mapbiomas_collection71_integration_v1').mask(bioma250mil_PANT);
-var GEDI = ee.Image('users/potapovpeter/GEDI_V27/GEDI_SAM_v27').rename('GEDI');
-var mapa_estavel_col71 = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/PANT_amostras_estaveis85a22_col71_v2');
+// Load the biomes image and mask it to the Pantanal biome
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41');
+var bioma250mil_PANT = biomes.mask(biomes.eq(3));
+Map.addLayer(bioma250mil_PANT,{},'Bioma',false);
 
-// vis Params
+// Load the Collection 8 image and mask it to the Pantanal biome
+var asset_col8 = ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1').mask(bioma250mil_PANT);
+
+// Load the GEDI image and rename it
+var GEDI = ee.Image('users/potapovpeter/GEDI_V27/GEDI_SAM_v27').rename('GEDI');
+
+// Define visualization parameters for the GEDI image
 var imageVisGEDI = {"min": 0,"max": 15,"palette":["c9f5f1","#ffbeee","#daffe0","#c0debf","08ff04","#037e07","0b240a"]};
+Map.addLayer(GEDI.clip(limite), imageVisGEDI,'GEDI', false);
+
+// Load the palettes module and define visualization parameters
 var palettes = require('users/mapbiomas/modules:Palettes.js');
 var vis = {
     'min': 0,
     'max': 62,
     'palette': palettes.get('classification7')
 };
-Map.addLayer(GEDI.clip(limite), imageVisGEDI,'GEDI', false);
-Map.addLayer(mapa_estavel_col71, vis, 'mapa_estavel_col71', false);
 
-// Balancing the number of stable samples
-var amostras_flor = 300;
-var amostras_sava = 1000;
-var amostras_camp = 4000;
-var amostras_agro = 600;
-var amostras_agua = 900;
+// Load the stable map from Collection 8
+var mapa_estavel_col71 = ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/PANT_amostras_estaveis85a22_col8_v1')
+Map.addLayer(mapa_estavel_col71, vis, 'mapa_estavel_col8', false);
 
-// Balancing the number of complementary samples
-var complemento_cave = 1;
-var complemento_sava = 200;
-var complemento_camp = 200;
-var complemento_flor = 300;
-var complemento_agro = 50;
-var complemento_agua = 1;
+// Define the asset path for the Collection 8 mosaics
+var asset_mosaicos_col8 = 'projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2';
 
-// feature space 
+// Define the number of stable samples for each class
+var amostras_flor = 350
+var amostras_sava = 1500
+var amostras_camp = 4050
+var amostras_agro = 600
+var amostras_agua = 900
+
+// Define the number of complementary samples for each class
+var complemento_cave = 1
+var complemento_sava = 200
+var complemento_camp = 200
+var complemento_flor = 300
+var complemento_agro = 50
+var complemento_agua = 1
+
+// Define the band names for the training data
 var bandNames = ee.List(['gcvi_median_dry','gcvi_median_wet','red_median_wet','swir1_median_dry',
                          'gcvi_median','ndvi_median_wet','red_median','cai_median','savi_median_wet',
                          'swir1_median','gcvi_stdDev','green_min','swir1_median_wet','savi_median_dry',
@@ -10797,9 +10807,9 @@ var bandNames = ee.List(['gcvi_median_dry','gcvi_median_wet','red_median_wet','s
                          'evi2_median','red_median_dry','evi2_median_wet','swir2_median_dry','swir2_median',
                          'ndvi_median_dry','green_median_wet','green_median','wefi_median_wet',
                          'evi2_median_dry','ndwi_median_wet','ndwi_stdDev','ndwi_median','ndwi_median_dry',
-                         'longitude','latitude','GEDI','nddi_wet','nddi_dry']);
+                         'longitude','latitude','GEDI','nddi_wet','nddi_dry'])
 
-// Supervised Classification
+// Define the list of years for processing
 var anos = [
             1985,1986, 1987,1988,1989,
             1990,1991,1992,1993,1994,
@@ -10809,10 +10819,11 @@ var anos = [
             2008,2009,2010,2011,
             2012, 2013,2014,2015,
             2016,2017,
-            2018,2019,2020,2021,2022
+            2018,2019,2020,2021,2022,2023
             ];
 if (coleta) {var anos = lista_anos}
 
+// Define a function to shuffle a feature collection
 var shuffle = function (collection, seed) {collection = collection.randomColumn('random', seed || 1).sort('random', true)
         .map(function (feature) {var rescaled = ee.Number(feature.get('random')).multiply(1000000000).round();
                 return feature.set('new_id', rescaled);
@@ -10823,272 +10834,384 @@ var shuffle = function (collection, seed) {collection = collection.randomColumn(
     return shuffled;
 };
 
-var asset_mosaicos_col8 = 'projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2';
+// Loop through each year and process the data
 for (var i_ano=0;i_ano<anos.length; i_ano++){
   var ano = anos[i_ano];
 
-
+  // Define the years and assets for each year
   if      (ano == 1985) {
-    var ano1 = 1985; var ano2 = 1986; var ano3 = 1987;
-    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
+    var ano1 = 1985; var ano2 = 1986; var ano3 = 1987
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
   }
   else if (ano == 1986) {
-    var ano1 = 1986; var ano2 = 1985; var ano3 = 1987;
-    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
+    var ano1 = 1986; var ano2 = 1985; var ano3 = 1987
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
   }
   else if (ano == 2000) {
-    var ano1 = 2000; var ano2 = 1999; var ano3 = 1998;
-    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5';
-    var amostras_agro = 1000;
+    var ano1 = 2000; var ano2 = 1999; var ano3 = 1998
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5'
+    var amostras_agro = 1000
   }
   else if (ano == 2001)   {
-    var ano1 = 2001; var ano2 = 2000; var ano3 = 1999;
-    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l5';
-    var amostras_agro = 1100;
+    var ano1 = 2001; var ano2 = 2000; var ano3 = 1999
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l5'
+    var amostras_agro = 1100
   }
   else if (ano == 2002) {
-    var ano1 = 2002; var ano2 = 2001; var ano3 = 2000;
-    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l7';
-    var amostras_agro = 1100;
+    var ano1 = 2002; var ano2 = 2001; var ano3 = 2000
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l7'
+    var amostras_agro = 1100
   }
   else if (ano == 2003) {
-    var ano1 = 2003; var ano2 = 2002; var ano3 = 2001;
-     var asset1 = 'l5'; var asset2 = 'l7'; var asset3 = 'l7';
-    var amostras_agro = 1200;
+    var ano1 = 2003; var ano2 = 2002; var ano3 = 2001
+     var asset1 = 'l5'; var asset2 = 'l7'; var asset3 = 'l7'
+    var amostras_agro = 1200
   }
   else if (ano == 2004) {
-    var ano1 = 2004; var ano2 = 2003; var ano3 = 2002;
-     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
-    var amostras_agro = 1200;
+    var ano1 = 2004; var ano2 = 2003; var ano3 = 2002
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1200
   }
 
   else if (ano == 2005) {
-    var ano1 = 2005; var ano2 = 2004; var ano3 = 2003;
-     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
-    var amostras_agro = 1300;
+    var ano1 = 2005; var ano2 = 2004; var ano3 = 2003
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1300
   }
   else if (ano == 2006) {
-    var ano1 = 2006; var ano2 = 2005; var ano3 = 2004;
-     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
-    var amostras_agro = 1400;
+    var ano1 = 2006; var ano2 = 2005; var ano3 = 2004
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1400
   }
   else if (ano == 2007) {
-    var ano1 = 2007; var ano2 = 2006; var ano3 = 2005;
-     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
-    var amostras_agro = 1500;
+    var ano1 = 2007; var ano2 = 2006; var ano3 = 2005
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1500
   }
   else if (ano == 2008) {
-    var ano1 = 2008; var ano2 = 2007; var ano3 = 2006;
-     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
-    var amostras_agro = 1600;
+    var ano1 = 2008; var ano2 = 2007; var ano3 = 2006
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1600
   }
   else if (ano == 2009) {
-    var ano1 = 2009; var ano2 = 2008; var ano3 = 2007;
-     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
-    var amostras_agro = 1700;
+    var ano1 = 2009; var ano2 = 2008; var ano3 = 2007
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1700
   }
   else if (ano == 2010) {
-    var ano1 = 2010; var ano2 = 2003; var ano3 = 2002;
-     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
-    var amostras_agro = 1800;
+    var ano1 = 2010; var ano2 = 2003; var ano3 = 2002
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1800
   }
   else if (ano == 2011) {
-    var ano1 = 2011; var ano2 = 2009; var ano3 = 2008;
-     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
-    var amostras_agro = 1900;
+    var ano1 = 2011; var ano2 = 2009; var ano3 = 2008
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7'
+    var amostras_agro = 1900
   }
   else if (ano == 2012) {
-    var ano1 = 2012; var ano2 = 2011; var ano3 = 2010;
-    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5';
-    var amostras_agro = 2000;
+    var ano1 = 2012; var ano2 = 2011; var ano3 = 2010
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5'
+    var amostras_agro = 2000
   }
   else if (ano == 2013) {
-    var ano1 = 2013; var ano2 = 2012; var ano3 = 2011;
-    var asset1 = 'l8'; var asset2 = 'l7'; var asset3 = 'l5';
-    var amostras_agro = 2100;
+    var ano1 = 2013; var ano2 = 2012; var ano3 = 2011
+    var asset1 = 'l8'; var asset2 = 'l7'; var asset3 = 'l5'
+    var amostras_agro = 2100
   }
   else if (ano == 2014) {
-    var ano1 = 2014; var ano2 = 2013; var ano3 = 2012;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l7';
-    var amostras_agro = 2200;
+    var ano1 = 2014; var ano2 = 2013; var ano3 = 2012
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l7'
+    var amostras_agro = 2200
   }
   else if (ano == 2015) {
-    var ano1 = 2015; var ano2 = 2014; var ano3 = 2013;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
-    var amostras_agro = 2300;
+    var ano1 = 2015; var ano2 = 2014; var ano3 = 2013
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2300
   }
   else if (ano == 2016) {
-    var ano1 = 2016; var ano2 = 2015; var ano3 = 2014;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
-    var amostras_agro = 2400;
+    var ano1 = 2016; var ano2 = 2015; var ano3 = 2014
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2400
   }
   else if (ano == 2017) {
-    var ano1 = 2017; var ano2 = 2016; var ano3 = 2015;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
-    var amostras_agro = 2500;
+    var ano1 = 2017; var ano2 = 2016; var ano3 = 2015
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2500
   }
   else if (ano == 2018) {
-    var ano1 = 2018; var ano2 = 2017; var ano3 = 2016;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
-    var amostras_agro = 2600;
+    var ano1 = 2018; var ano2 = 2017; var ano3 = 2016
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2600
   }
   else if (ano == 2019) {
-    var ano1 = 2019; var ano2 = 2018; var ano3 = 2017;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
-    var amostras_agro = 2700;
+    var ano1 = 2019; var ano2 = 2018; var ano3 = 2017
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2700
   }
   else if (ano == 2020) {
-    var ano1 = 2020; var ano2 = 2019; var ano3 = 2018;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
-    var amostras_agro = 2800;
+    var ano1 = 2020; var ano2 = 2019; var ano3 = 2018
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2800
   }
   else if (ano == 2021) {
-    var ano1 = 2021; var ano2 = 2020; var ano3 = 2019;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
-    var amostras_agro = 2900;
+    var ano1 = 2021; var ano2 = 2020; var ano3 = 2019
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2900
   }
   else if (ano == 2022) {
-    var ano1 = 2022; var ano2 = 2021; var ano3 = 2020;
-    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
-    var amostras_agro = 2900;
+    var ano1 = 2022; var ano2 = 2021; var ano3 = 2020
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 2900
+  }
+  else if (ano == 2023) {
+    var ano1 = 2023; var ano2 = 2022; var ano3 = 20210
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8'
+    var amostras_agro = 3000
   }
   else {
-    var ano1 = ano; var ano2 = ( ano - 1); var ano3 = ( ano - 2);
-    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
-    var amostras_agro = 3000;
+    var ano1 = ano; var ano2 = ( ano - 1); var ano3 = ( ano - 2)
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5'
+    var amostras_agro = 3000
   }
 
-   var mosaicoTotal = ee.ImageCollection(asset_mosaicos_col8)
-                        .filterMetadata('biome', 'equals', 'PANTANAL')
+  // Create a mosaic for the current year
+  var mosaicoTotal = ee.ImageCollection(asset_mosaicos_col8)
+                        .filterMetadata('biome', 'equals', bioma)
                         .filterMetadata('year', 'equals', ano1)
                         .filter(ee.Filter.eq('satellite', asset1))
                         .filterBounds(geometry)
-                        .mosaic();
+                        .mosaic()
 
-     var ll = ee.Image.pixelLonLat().clip(geometry);
-    
-    var long = ll.select('longitude').add(34.8).multiply(-1).multiply(1000).toInt16();
-    var lati = ll.select('latitude').add(5).multiply(-1).multiply(1000).toInt16();
-    
-    mosaicoTotal = mosaicoTotal.addBands(long.rename('longitude'));
-    mosaicoTotal = mosaicoTotal.addBands(lati.rename('latitude' ));
-    mosaicoTotal = mosaicoTotal.addBands(GEDI.rename('GEDI' ));
-    var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
-    var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
-    mosaicoTotal = mosaicoTotal.addBands(nddi_wet.rename('nddi_wet' ));
-    mosaicoTotal = mosaicoTotal.addBands(nddi_dry.rename('nddi_dry' ));
+  // Add longitude and latitude bands to the mosaic
+  var ll = ee.Image.pixelLonLat().clip(geometry);
+  var long = ll.select('longitude').add(34.8).multiply(-1).multiply(1000).toInt16()
+  var lati = ll.select('latitude').add(5).multiply(-1).multiply(1000).toInt16()
+  mosaicoTotal = mosaicoTotal.addBands(long.rename('longitude'))
+  mosaicoTotal = mosaicoTotal.addBands(lati.rename('latitude' ))
+  mosaicoTotal = mosaicoTotal.addBands(GEDI.rename('GEDI' ))
 
-  // mosaicoTotal = mosaicoTotal.select(bandNames)
- if (coleta) {    
-    var colecao71_ano = asset_col71.select('classification_'+ano).remap(
-                  [3, 4, 5, 9,11,12,13,15,18,19,20,21,36,39,41,21,22,23,24,25,26,29,30,31,32,33],
-                  [3, 4, 3, 9,12,12,13,21,21,21,21,21,21,21,21,21,22,22,22,22,33,29,22,33,13,33]);
-   Map.addLayer(mosaicoTotal, {bands: ['swir1_median', 'nir_median', 'red_median'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico '+ ano, true);
-  // Map.addLayer(colecao71_ano, vis, 'Classes ORIGINAIS 85 a 21', true);
-  }    
-    var BDamostras = ee.FeatureCollection(dirsamples+'pontos_train_v'+versao_samples+'_'+ano).filterBounds(limite);
-    var BDflo = BDamostras.filterMetadata("reference", "equals", 3);
-    var BDsav = BDamostras.filterMetadata("reference", "equals", 4);
-    var BDcam = BDamostras.filterMetadata("reference", "equals", 12);
-    var BDagr = BDamostras.filterMetadata("reference", "equals", 21);
-    var BDagu = BDamostras.filterMetadata("reference", "equals", 33);
+  // Calculate NDDI for wet and dry seasons
+  var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
+  var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
+  mosaicoTotal = mosaicoTotal.addBands(nddi_wet.rename('nddi_wet' ))
+  mosaicoTotal = mosaicoTotal.addBands(nddi_dry.rename('nddi_dry' ))
 
-    BDflo = shuffle(BDflo, 2).limit(amostras_flor);  
-    BDsav = shuffle(BDsav, 2).limit(amostras_sava); 
-    BDcam = shuffle(BDcam, 2).limit(amostras_camp);
-    BDagr = shuffle(BDagr, 2).limit(amostras_agro); 
-    BDagu = shuffle(BDagu, 2).limit(amostras_agua);
+  // Select the desired bands for training
+  //mosaicoTotal = mosaicoTotal.select(bandNames)
 
- if (coleta) {    
-     print('BDflo',BDflo.size());
-     print('BDsav',BDsav.size());
-     print('BDcam',BDcam.size());
-     print('BDagr',BDagr.size());
-     print('BDagu',BDagu.size())  }
-    
-  // Amostras complementares
-    var amostraTotal = campo_verde.merge(savana).merge(campo).merge(floresta).merge(agro).merge(agua).merge(agric);
-    amostraTotal = amostraTotal.filterBounds(limite);
-    var amostraTotalimg = amostraTotal.reduceToImage({properties: ['reference'],reducer: ee.Reducer.first()});
-    amostraTotalimg = amostraTotalimg.select([0],['reference']);
-    var training_cave = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': complemento_cave, 'region': campo_verde.filterBounds(limite), 'scale': 30, 'seed': 1});
-    var training_sava = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': complemento_sava, 'region': savana.filterBounds(limite), 'scale': 30, 'seed': 1});
-    var training_camp = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': complemento_camp, 'region': campo.filterBounds(limite), 'scale': 30, 'seed': 1});
-    var training_flor = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': complemento_flor, 'region': floresta.filterBounds(limite), 'scale': 30, 'seed': 1});
-    var training_agro = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': complemento_agro, 'region': agro.filterBounds(limite), 'scale': 30, 'seed': 1});
-    var training_agua = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': complemento_agua, 'region': agua.filterBounds(limite), 'scale': 30, 'seed': 1});
-    var training_agric = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': 50, 'region': agric.filterBounds(limite), 'scale': 30, 'seed': 1});
-    if (ano >= 1990) {
-    var training_agric = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': 100, 'region': agric.filterBounds(limite), 'scale': 30, 'seed': 1});
-  }
-  if (ano >= 2000) {
-    var training_agric = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': 150, 'region': agric.filterBounds(limite), 'scale': 30, 'seed': 1});
-  }
-  if (ano >= 2010) {
-    var training_agric = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': 200, 'region': agric.filterBounds(limite), 'scale': 30, 'seed': 1});
-  }
-   // print('Total de Complementares:')    
-   // print('campo_verde', training_cave.size())
-   // print('savana', training_sava.size())
-   // print('campo', training_camp.size())
-   // print('floresta', training_flor.size())
-   // print('agro', training_agro.size())
-   // print('agua', training_agua.size())
-  var training = BDflo.merge(BDsav).merge(BDcam).merge(BDagu).merge(BDagr)
-      .merge(training_cave).merge(training_sava).merge(training_camp).merge(training_flor).merge(training_agro).merge(training_agua);
-  if (ano >= 2000) {
-  var training = BDflo.merge(BDsav).merge(BDcam).merge(BDagu).merge(BDagr)
-      .merge(training_cave).merge(training_sava).merge(training_camp).merge(training_flor).merge(training_agro).merge(training_agua).merge(training_agric);
-  }
-
-  var classifier = ee.Classifier.smileRandomForest({numberOfTrees: RFtrees, variablesPerSplit:1});
-  classifier = classifier.train(training, 'reference', bandNames);
-   // print(classifier)
-  
-  var classified = mosaicoTotal.classify(classifier).mask(mosaicoTotal.select('blue_median'));
-  classified = classified.select(['classification'],['classification_'+ano]).clip(limite).toInt16(); 
+  // If collecting data, display the mosaic and original classes
   if (coleta) {    
-    Map.addLayer(classified, vis, 'RF '+ano, true);
-    Map.addLayer(ee.Image('projects/mapbiomas-workspace/COLECAO7/classificacao/PANTANAL-'+ano+'-6'), vis, 'Col 7 versao integracao'+ano, false);
-    Map.addLayer(ee.Image('projects/mapbiomas-workspace/COLECAO7/classificacao/PANTANAL-'+ano+'-7'), vis, 'Col 71 versao integracao'+ano, false);
+    var colecao71_ano = asset_col8.select('classification_'+ano).remap(
+                  [3, 4, 5, 9,11,12,13,15,18,19,20,21,36,39,41,21,22,23,24,25,26,29,30,31,32,33],
+                  [3, 4, 3, 9,12,12,13,21,21,21,21,21,21,21,21,21,22,22,22,22,33,29,22,33,13,33])
+    Map.addLayer(mosaicoTotal, {bands: ['swir1_median', 'nir_median', 'red_median'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico '+ ano, false)
+    // Map.addLayer(colecao71_ano, vis, 'Classes ORIGINAIS 85 a 21', true);
+  }    
+
+  // Load the training samples for years after 2020
+  if (ano > 2020) {
+    var BDamostras = ee.FeatureCollection(dirsamples+'pontos_trained_v'+versao_samples+'_'+ano).filterBounds(limite)
+   
+    var BDflo = BDamostras.filterMetadata("reference", "equals", 3);
+    var BDsav = BDamostras.filterMetadata("reference", "equals", 4)
+    var BDcam = BDamostras.filterMetadata("reference", "equals", 12)
+    var BDagr = BDamostras.filterMetadata("reference", "equals", 21)
+    var BDagu = BDamostras.filterMetadata("reference", "equals", 33)//.map(function(feat) {return feat.set({'reference': 0})});
+    
+    
+    BDflo = shuffle(BDflo, 2).limit(amostras_flor)  
+    BDsav = shuffle(BDsav, 2).limit(amostras_sava) 
+    BDcam = shuffle(BDcam, 2).limit(amostras_camp)
+    BDagr = shuffle(BDagr, 2).limit(amostras_agro) 
+    BDagu = shuffle(BDagu, 2).limit(amostras_agua)
+
+  }
+  // Load the training samples for years before 2021
+  else {
+    var BDamostras = ee.FeatureCollection(dirsamples+'pontos_trained_v'+versao_samples+'_'+ano).filterBounds(limite)//.filterBounds(miranda)
+    var BD2_amostras = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/pontos_678_trained_v1_'+ano).filterBounds(limite)//.filterBounds(miranda)
+
+    var BDflo = BDamostras.filterMetadata("reference", "equals", 3);
+    var BDsav = BDamostras.filterMetadata("reference", "equals", 4)
+    var BDcam = BDamostras.filterMetadata("reference", "equals", 12)
+    var BDagr = BDamostras.filterMetadata("reference", "equals", 21)
+    var BDagu = BDamostras.filterMetadata("reference", "equals", 33)//.map(function(feat) {return feat.set({'reference': 0})});
+    
+    var BDflo2 = BD2_amostras.filterMetadata("reference", "equals", 3);
+    var BDsav2 = BD2_amostras.filterMetadata("reference", "equals", 4)
+    var BDcam2 = BD2_amostras.filterMetadata("reference", "equals", 12)
+    var BDagr2 = BD2_amostras.filterMetadata("reference", "equals", 21)
+    var BDagu2 = BD2_amostras.filterMetadata("reference", "equals", 33)
+
+    
+    
+
+    BDflo = BDflo.merge(BDflo2)
+    BDsav = BDsav.merge(BDsav2)
+    BDcam = BDcam.merge(BDcam2)
+    BDagr = BDagr.merge(BDagr2)
+    BDagu = BDagu.merge(BDagu2)
+
+    BDflo = shuffle(BDflo, 2).limit(amostras_flor)  
+    BDsav = shuffle(BDsav, 2).limit(amostras_sava) 
+    BDcam = shuffle(BDcam, 2).limit(amostras_camp)
+    BDagr = shuffle(BDagr, 2).limit(amostras_agro) 
+    BDagu = shuffle(BDagu, 2).limit(amostras_agua)
+  }
+  // Print the number of samples for each class if collecting data
+  if (coleta) {    
+    print('BDflo',BDflo.size())
+    print('BDsav',BDsav.size())
+    print('BDcam',BDcam.size())
+    print('BDagr',BDagr.size())
+    print('BDagu',BDagu.size())  
+  }
+    
+  // Create complementary samples
+  // Amostras complementares
+  var amostraTotal = agri_85.merge(agri_95).merge(agri_05)//.merge(floresta).merge(agro).merge(agua)
+  amostraTotal = amostraTotal.filterBounds(limite)
+  //  print(amostraTotal.size())
+  //  
+  var amostraTotalimg = amostraTotal.reduceToImage({properties: ['reference'],reducer: ee.Reducer.first()})
+  amostraTotalimg = amostraTotalimg.select([0],['reference'])
+
+  var training_agri_85 = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': 700, 'region': agri_85.filterBounds(limite), 'scale': 30, 'seed': 1});
+  var training_agri_95 = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': 100, 'region': agri_95.filterBounds(limite), 'scale': 30, 'seed': 1});
+  var training_agri_05 = mosaicoTotal.select(bandNames).addBands(amostraTotalimg).sample({'numPixels': 100, 'region': agri_05.filterBounds(limite), 'scale': 30, 'seed': 1});
+
+  var amostras_agric = training_agri_85.merge(training_agri_95).merge(training_agri_05)
+    
+  if (ano < 2005) {
+    var amostras_agric = training_agri_85.merge(training_agri_95)
+  }
+  if (ano < 1995) {
+    var amostras_agric = training_agri_85
+  }
+  if (coleta) { 
+    print(ano)
+    print(amostras_agric.size())
+  }
+  var training = BDflo.merge(BDsav).merge(BDcam).merge(BDagu).merge(BDagr)
+      .merge(amostras_agric)
+
+  // Train the random forest classifier
+  var classifier = ee.Classifier.smileRandomForest({numberOfTrees: RFtrees, variablesPerSplit:1})
+  
+  // classifier = classifier.setOutputMode('PROBABILITY')
+  classifier = classifier.train(training, 'reference', bandNames);
+  //  print(classifier)
+
+  // Classify the mosaic and clip it to the geometry
+  var classified = mosaicoTotal.classify(classifier).mask(mosaicoTotal.select('blue_median'));
+  classified = classified.select(['classification'],['classification_'+ano]).toInt8() 
+  var classifier_prob = classifier.setOutputMode('MULTIPROBABILITY')
+  var classified_prob = mosaicoTotal.classify(classifier_prob)
+  var max_prob = classified_prob.arrayReduce(ee.Reducer.max(), [0])
+  var img_max_prop = max_prob.arrayFlatten([['prob_'+ano]]).multiply(100).toInt8()
+
+  // Display the classified images if collecting data
+  if (coleta) {    
+    Map.addLayer(ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/PANT_col8_prob_reg6_v2').select('classification_'+ano),vis,'RF C8 '+ano,false)
+    Map.addLayer(classified, vis, 'RF '+ano, false)
+    Map.addLayer(ee.Image('projects/mapbiomas-workspace/public/collection8/mapbiomas_collection80_integration_v1').select('classification_'+ano), vis, 'Col 8 '+ano, false)
+    Map.addLayer(ee.Image('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/PANT_col9_prob_reg6_v1').select('classification_'+ano), vis, 'reg6 v1  '+ano, false)
   }
 
-  if (i_ano === 0){ var classified85a22 = classified}  
-  else {classified85a22 = classified85a22.addBands(classified); }
+  // Combine the classified images for all years
+  if (i_ano == 0){ 
+    var classified85a23 = classified
+    var classified85a23_prob = img_max_prop
+  }  
+  else {
+    classified85a23 = classified85a23.addBands(classified)
+    classified85a23_prob = classified85a23_prob.addBands(img_max_prop)
+  }
   
 }
-   var miranda = ee.FeatureCollection('users/gee_arcplan/micro_reg_hidr_miranda');
-   var reg6 = miranda;
 
+// Display classified images for specific years
+Map.addLayer(classified85a23.select('classification_1990').eq(1).selfMask(), vis, 'classification_1990', false)
+Map.addLayer(classified85a23.select('classification_2000').eq(1).selfMask(), vis, 'classification_2000', false)
+Map.addLayer(classified85a23.select('classification_2020').eq(1).selfMask(), vis, 'classification_2020', false)
 
-Map.addLayer(ee.Image().paint(reg6, 0, 3).toByte().clip(geometry),{},'reg6');
+// Define feature collections for different regions and sub-regions
+var sub_bac = ee.FeatureCollection('users/gee_arcplan/col7/SUBBACIAS_pantanal')
+var sub_reg = ee.FeatureCollection('users/gee_arcplan/col7/sub_reg_pantanal')
+var sistDep = ee.FeatureCollection('users/gee_arcplan/sist_dep_pantanal')
+var altoParaguai = sub_bac.filter(ee.Filter.eq('name', 'Alto Paraguai'))
+var taquari = sub_bac.filter(ee.Filter.eq('name', 'Taquari'))
+var megaLeque = sistDep.filter(ee.Filter.eq('Nivel_1','Megaleque do Taquari'))
+var baixoParaguai = sub_bac.filter(ee.Filter.eq('name', 'Baixo Paraguai'))
+var caceres = sub_reg.filter(ee.Filter.eq('SPRCLASSE', 'Cáceres'))
+var barao = sub_reg.filter(ee.Filter.eq('SPRCLASSE', 'Barão de Melgaço'))
+var pocone = sub_reg.filter(ee.Filter.eq('SPRCLASSE', 'Poconé'))
+var taquari_edit = ee.FeatureCollection('users/gee_arcplan/col7/taquari_editado')  
+var miranda = ee.FeatureCollection('users/gee_arcplan/micro_reg_hidr_miranda')
 
+// Define regions for visualization
+var aoi = ee.Image().paint(geometry,0,3).toByte()
+var reg0 = aoi
+var reg1 = baixoParaguai
+var reg2 = taquari_edit
+var reg3 = barao
+var reg4 = caceres
+var reg5 = pocone
+var reg6 = miranda
 
-// set output metadata
-classified85a22 = classified85a22
+// Display the regions
+//Map.addLayer(aoi,{},'reg0')
+//Map.addLayer(ee.Image().paint(reg1, 0, 3).toByte().clip(geometry),{},'reg1')
+//Map.addLayer(ee.Image().paint(reg2, 0, 3).toByte().clip(geometry),{},'reg2')
+//Map.addLayer(ee.Image().paint(reg3, 0, 3).toByte().clip(geometry),{},'reg3')
+//Map.addLayer(ee.Image().paint(reg4, 0, 3).toByte().clip(geometry),{},'reg4')
+//Map.addLayer(ee.Image().paint(reg5, 0, 3).toByte().clip(geometry),{},'reg5')
+Map.addLayer(ee.Image().paint(reg6, 0, 3).toByte().clip(geometry),{},'reg6')
+
+// Display the classified image
+Map.addLayer(classified85a23,{},'C9',false)
+
+// Set metadata for the classified image
+classified85a23 = classified85a23
 .set('territory', 'BRAZIL')
 .set('biome', 'PANTANAL')
 .set('source', 'arcplan')
 .set('version', version_out)
-.set('collection_id', 8.0);
+//.set('year', )
+.set('collection_id', 9.0)
 
-print(classified85a22);
+// Print the classified image
+print('final',classified85a23)
+
+// Export the classified image and probability image
 if (coleta) {  
-print(classified85a22);
+  print(classified85a23)
 } else {
-  // export classification
   Export.image.toAsset({
-    "image": classified85a22,
-    "description": 'PANT_col8_reg'+region+'_v'+version_out,
-    "assetId": dir_out + 'PANT_col8_prob_reg'+region+'_v'+version_out,
+  "image": classified85a23_prob,
+  "description": 'PANT_col9_reg'+region+'_v'+version_out+'_prob',
+  "assetId": dirout + 'PANT_col9_reg'+region+'_v'+version_out+'_prob',
+  "scale": 30,
+  "pyramidingPolicy": {
+      '.default': 'mode'
+  },
+  "maxPixels": 1e13,
+  "region": exporta_regiao06
+});    
+  
+  Export.image.toAsset({
+    "image": classified85a23,
+    "description": 'PANT_col9_reg'+region+'_v'+version_out,
+    "assetId": dirout + 'PANT_col9_prob_reg'+region+'_v'+version_out,
     "scale": 30,
     "pyramidingPolicy": {
         '.default': 'mode'
     },
     "maxPixels": 1e13,
-    "region": limite
-  });    
-}
-
+    "region": exporta_regiao06
+  });
+  
+  
+//Developed by ArcPlan Team
 //Marcos Rosa, Eduardo Rosa, Mariana Dias
-//Updated Jul 12, 2023 - MD - mariana@arcplan.com.br
+//Updated July 2024 - MD - mariana@arcplan.com.br
