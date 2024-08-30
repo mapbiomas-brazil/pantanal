@@ -41,7 +41,7 @@ var imageVisParam = {"opacity":1,"bands":["swir1","nir","red"],"min":0.022831949
 // CREATES AND EXPORTS ANNUAL FREQUENCY DATA BASED ON MONTHLY DATA
 
 // set output file
-var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col8/PANTANAL/SAMPLES/mensal/';
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/mensal/';
 var versao_in = '3';
 var versao_out = '2';
 var asset_mosaicos_col8 = 'projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2';
@@ -254,4 +254,4 @@ Export.image.toAsset({
   });    
 
 //Marcos Rosa, Eduardo Rosa, Mariana Dias
-//Updated Jul 31, 2023 - MD - mariana@arcplan.com.br
+//Updated Jul 31, 2024 - MD - mariana@arcplan.com.br
