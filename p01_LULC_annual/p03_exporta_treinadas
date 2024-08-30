@@ -1,0 +1,352 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var geometry = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-57.096709161575106, -22.381291620883964],
+          [-56.504751174751306, -20.9100602639963],
+          [-55.656656076945076, -20.86904590562034],
+          [-54.436881099288996, -18.88496067153981],
+          [-54.480903517638616, -16.181309829637303],
+          [-55.70071351410947, -15.281978870172077],
+          [-58.52527636432646, -15.239597746421188],
+          [-59.305603591472334, -15.695407408945032],
+          [-59.39362803784607, -16.529431212635835],
+          [-58.85214291782671, -16.62901913243888],
+          [-58.44852925747293, -18.05089479417228],
+          [-58.19600666255447, -22.320091706878245]]]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+// Set the output version for the samples
+var versao_out = '1';
+
+// Set the output version for the stable samples
+var versao_pt = '1';
+
+// Define the output directory for the exported samples
+var dirout = 'projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/';
+
+// Load the biomes raster image and mask it to get only the Pantanal biome
+var biomes = ee.Image('projects/mapbiomas-workspace/AUXILIAR/biomas-raster-41');
+var bioma250mil_PANT = biomes.mask(biomes.eq(3));
+Map.addLayer(bioma250mil_PANT);
+
+// Import the palettes module and set visualization parameters for the classification image
+var palettes = require('users/mapbiomas/modules:Palettes.js');
+var vis = {
+    'min': 0,
+    'max': 62,
+    'palette': palettes.get('classification8')
+};
+
+// Set the year for the analysis
+var ano = 2000;
+
+// Set the biome for the analysis
+var bioma = "PANTANAL";
+
+// Load the GEDI image and rename the band
+var GEDI = ee.Image('users/potapovpeter/GEDI_V27/GEDI_SAM_v27').rename('GEDI');
+// print("GEDI",GEDI);
+
+// Set visualization parameters for the GEDI image
+var imageVisGEDI = {"min": 0,"max": 15,"palette":["c9f5f1","#ffbeee","#daffe0","#c0debf","08ff04","#037e07","0b240a"]};
+Map.addLayer(GEDI, imageVisGEDI,'GEDI', false);
+
+// Define the regions for sampling
+var regioes = [geometry];
+  // Map.addLayer(pts, {}, 'pt', false)
+
+// Define the asset paths for the mosaics
+var dirasset = 'projects/nexgenmap/MapBiomas2/LANDSAT/mosaics';
+var dirasset7 = 'projects/nexgenmap/MapBiomas2/LANDSAT/mosaics-landsat-7';
+
+// Define the list of years for the analysis
+var anos = [
+              1985,1986, 1987,1988,1989,1990,1991,1992,1993,1994,
+              1995,1996,1997,1998,1999,2000,2001,2002, 
+              2003,2004,2005,2006,2007,2008,2009,2010,2011,
+              2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023
+              ];
+
+// Define the color palette for the NDVI
+var ndvi_color = '0f330f, 005000, 4B9300, 92df42, bff0bf, FFFFFF, eee4c7, ecb168, f90000';
+
+// Set visualization parameters for the NDFI
+var visParNDFI_amp = {'min':0, 'max':300, 'palette':ndvi_color};
+
+// Load the stable samples from the asset
+var pts_reg1 = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/samples_stable_r1_v'+versao_pt);
+
+// Print the size of the stable samples collection
+print(pts_reg1.size());
+//print(pts_reg2.size());
+
+// Set the asset path for the collection 9 mosaics
+var asset_mosaicos_col6 = 'projects/nexgenmap/MapBiomas2/LANDSAT/BRAZIL/mosaics-2';
+
+// Loop through each year
+for (var i_ano=0;i_ano<anos.length; i_ano++){
+  // Get the current year
+  var ano = anos[i_ano];
+
+  // Define the asset paths and years based on the current year
+  if      (ano == 1985) {
+    var ano1 = 1985; var ano2 = 1986; var ano3 = 1987;
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+  else if (ano == 1986) {
+    var ano1 = 1986; var ano2 = 1985; var ano3 = 1987;
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+  else if (ano == 2000) {
+    var ano1 = 2000; var ano2 = 1999; var ano3 = 1998;
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+  else if (ano == 2001)   {
+    var ano1 = 2001; var ano2 = 2000; var ano3 = 1999;
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l5';
+  }
+  else if (ano == 2002) {
+    var ano1 = 2002; var ano2 = 2001; var ano3 = 2000;
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l7';
+  }
+  else if (ano == 2003) {
+    var ano1 = 2003; var ano2 = 2002; var ano3 = 2001;
+     var asset1 = 'l5'; var asset2 = 'l7'; var asset3 = 'l7';
+  }
+  else if (ano == 2004) {
+    var ano1 = 2004; var ano2 = 2003; var ano3 = 2002;
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
+  }
+  else if (ano == 2012) {
+    var ano1 = 2012; var ano2 = 2011; var ano3 = 2010;
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+  else if (ano == 2013) {
+    var ano1 = 2013; var ano2 = 2012; var ano3 = 2011;
+    var asset1 = 'l8'; var asset2 = 'l7'; var asset3 = 'l5';
+  }
+  else if (ano == 2014) {
+    var ano1 = 2014; var ano2 = 2013; var ano3 = 2012;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l7';
+  }
+  else if (ano == 2015) {
+    var ano1 = 2015; var ano2 = 2014; var ano3 = 2013;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2016) {
+    var ano1 = 2016; var ano2 = 2015; var ano3 = 2014;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2017) {
+    var ano1 = 2017; var ano2 = 2016; var ano3 = 2015;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2018) {
+    var ano1 = 2018; var ano2 = 2017; var ano3 = 2016;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2019) {
+    var ano1 = 2019; var ano2 = 2018; var ano3 = 2017;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2020) {
+    var ano1 = 2020; var ano2 = 2019; var ano3 = 2018;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2021) {
+    var ano1 = 2021; var ano2 = 2020; var ano3 = 2019;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2022) {
+    var ano1 = 2022; var ano2 = 2021; var ano3 = 2020;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+   else if (ano == 2023) {
+    var ano1 = 2023; var ano2 = 2022; var ano3 = 2021;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else {
+    var ano1 = ano; var ano2 = ( ano - 1); var ano3 = ( ano - 2);
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+
+  // Create a mosaic for the current year
+  var mosaicoTotal = ee.ImageCollection(asset_mosaicos_col6)
+                      .filterMetadata('biome', 'equals', bioma)
+                      .filterMetadata('year', 'equals', ano1)
+                      .filter(ee.Filter.eq('satellite', asset1))
+                      .filterBounds(geometry)
+                      .mosaic();
+
+  // Add longitude and latitude bands to the mosaic
+  var ll = ee.Image.pixelLonLat().clip(geometry);
+  var long = ll.select('longitude').add(34.8).multiply(-1).multiply(1000).toInt16();
+  var lati = ll.select('latitude').add(5).multiply(-1).multiply(1000).toInt16();
+  mosaicoTotal = mosaicoTotal.addBands(long.rename('longitude'));
+  mosaicoTotal = mosaicoTotal.addBands(lati.rename('latitude' ));
+
+  // Add the GEDI band to the mosaic
+  mosaicoTotal = mosaicoTotal.addBands(GEDI.rename('GEDI'));
+
+  // Calculate the NDDI for wet and dry seasons
+  var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
+  var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
+  mosaicoTotal = mosaicoTotal.addBands(nddi_wet.rename('nddi_wet' ));
+  mosaicoTotal = mosaicoTotal.addBands(nddi_dry.rename('nddi_dry' ));
+
+  // Add the mosaic to the map for visualization
+  Map.addLayer(mosaicoTotal, {bands: ['swir1_median', 'nir_median', 'red_median'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico '+ano, false);
+
+  // Sample the mosaic based on the stable samples
+  var train_reg1 = mosaicoTotal.sampleRegions({'collection': pts_reg1, 'scale': 30,'tileScale': 4,'geometries': true});
+  
+  // Print the size of the sampled collection
+  print(train_reg1.size());
+
+  // Merge the sampled collections
+  var merge_ano = train_reg1//.merge(train_reg2).merge(train_reg3).merge(train_reg4).merge(train_reg5).merge(train_reg6).merge(train_reg7);
+
+  // Export the merged collection to an asset
+  Export.table.toAsset(merge_ano, 'pontos_trained_v'+versao_out+'_'+ano, dirout + 'pontos_trained_v'+versao_out+'_'+ano);  
+  
+}
+
+// repeat the process to export stable samples through colections
+
+// Loop through each year
+for (var i_ano=0;i_ano<anos.length; i_ano++){
+  // Get the current year
+  var ano = anos[i_ano];
+
+  // Load the stable samples from the asset
+  var pts_reg1 = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/samples_stable678_r1_v'+versao_pt+'_'+ano);
+
+  // Define the asset paths and years based on the current year
+  if      (ano == 1985) {
+    var ano1 = 1985; var ano2 = 1986; var ano3 = 1987;
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+  else if (ano == 1986) {
+    var ano1 = 1986; var ano2 = 1985; var ano3 = 1987;
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+  else if (ano == 2000) {
+    var ano1 = 2000; var ano2 = 1999; var ano3 = 1998;
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+  else if (ano == 2001)   {
+    var ano1 = 2001; var ano2 = 2000; var ano3 = 1999;
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l5';
+  }
+  else if (ano == 2002) {
+    var ano1 = 2002; var ano2 = 2001; var ano3 = 2000;
+    var asset1 = 'l7'; var asset2 = 'l7'; var asset3 = 'l7';
+  }
+  else if (ano == 2003) {
+    var ano1 = 2003; var ano2 = 2002; var ano3 = 2001;
+     var asset1 = 'l5'; var asset2 = 'l7'; var asset3 = 'l7';
+  }
+  else if (ano == 2004) {
+    var ano1 = 2004; var ano2 = 2003; var ano3 = 2002;
+     var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l7';
+  }
+  else if (ano == 2012) {
+    var ano1 = 2012; var ano2 = 2011; var ano3 = 2010;
+    var asset1 = 'l7'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+  else if (ano == 2013) {
+    var ano1 = 2013; var ano2 = 2012; var ano3 = 2011;
+    var asset1 = 'l8'; var asset2 = 'l7'; var asset3 = 'l5';
+  }
+  else if (ano == 2014) {
+    var ano1 = 2014; var ano2 = 2013; var ano3 = 2012;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l7';
+  }
+  else if (ano == 2015) {
+    var ano1 = 2015; var ano2 = 2014; var ano3 = 2013;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2016) {
+    var ano1 = 2016; var ano2 = 2015; var ano3 = 2014;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2017) {
+    var ano1 = 2017; var ano2 = 2016; var ano3 = 2015;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2018) {
+    var ano1 = 2018; var ano2 = 2017; var ano3 = 2016;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2019) {
+    var ano1 = 2019; var ano2 = 2018; var ano3 = 2017;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2020) {
+    var ano1 = 2020; var ano2 = 2019; var ano3 = 2018;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2021) {
+    var ano1 = 2021; var ano2 = 2020; var ano3 = 2019;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+  }
+  else if (ano == 2022) {
+    var ano1 = 2022; var ano2 = 2021; var ano3 = 2020;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+    var pts_reg1 = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/samples_stable678_r1_v'+versao_pt+'_2022');
+  }
+  else if (ano == 2023) {
+    var ano1 = 2023; var ano2 = 2022; var ano3 = 2021;
+    var asset1 = 'l8'; var asset2 = 'l8'; var asset3 = 'l8';
+    var pts_reg1 = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/col9/PANTANAL/SAMPLES/samples_stable678_r1_v'+versao_pt+'_2022');
+  }
+  else {
+    var ano1 = ano; var ano2 = ( ano - 1); var ano3 = ( ano - 2);
+    var asset1 = 'l5'; var asset2 = 'l5'; var asset3 = 'l5';
+  }
+
+  // Create a mosaic for the current year
+  var mosaicoTotal = ee.ImageCollection(asset_mosaicos_col6)
+                      .filterMetadata('biome', 'equals', bioma)
+                      .filterMetadata('year', 'equals', ano1)
+                      .filter(ee.Filter.eq('satellite', asset1))
+                      .filterBounds(geometry)
+                      .mosaic();
+
+  // Add longitude and latitude bands to the mosaic
+  var ll = ee.Image.pixelLonLat().clip(geometry);
+  var long = ll.select('longitude').add(34.8).multiply(-1).multiply(1000).toInt16();
+  var lati = ll.select('latitude').add(5).multiply(-1).multiply(1000).toInt16();
+  mosaicoTotal = mosaicoTotal.addBands(long.rename('longitude'));
+  mosaicoTotal = mosaicoTotal.addBands(lati.rename('latitude' ));
+
+  // Add the GEDI band to the mosaic
+  mosaicoTotal = mosaicoTotal.addBands(GEDI.rename('GEDI'));
+
+  // Calculate the NDDI for wet and dry seasons
+  var nddi_wet = mosaicoTotal.normalizedDifference(['ndvi_median_wet','ndwi_median_wet']).add(1).multiply(1000);
+  var nddi_dry = mosaicoTotal.normalizedDifference(['ndvi_median_dry','ndwi_median_dry']).add(1).multiply(1000);
+  mosaicoTotal = mosaicoTotal.addBands(nddi_wet.rename('nddi_wet' ));
+  mosaicoTotal = mosaicoTotal.addBands(nddi_dry.rename('nddi_dry' ));
+
+  // Add the mosaic to the map for visualization
+  Map.addLayer(mosaicoTotal, {bands: ['swir1_median', 'nir_median', 'red_median'],gain: [0.08, 0.06, 0.2],gamma: 0.85}, 'mosaico '+ano, false);
+
+  // Sample the mosaic based on the stable samples
+  var train_reg1 = mosaicoTotal.sampleRegions({'collection': pts_reg1, 'scale': 30,'tileScale': 4,'geometries': true});
+
+  // Print the size of the sampled collection
+  print(train_reg1.size());
+
+  // Merge the sampled collections
+  var merge_ano = train_reg1//.merge(train_reg2).merge(train_reg3).merge(train_reg4).merge(train_reg5).merge(train_reg6).merge(train_reg7);
+
+  // Export the merged collection to an asset
+  Export.table.toAsset(merge_ano, 'pontos_678_trained_v'+versao_out+'_'+ano, dirout + 'pontos_678_trained_v'+versao_out+'_'+ano);  
+ 
+}
+
+//Developed by ArcPlan Team
+//Marcos Rosa, Eduardo Rosa, Mariana Dias
+//Updated July 2024 - MD - mariana@arcplan.com.br
